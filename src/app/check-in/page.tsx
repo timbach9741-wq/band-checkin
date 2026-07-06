@@ -357,27 +357,29 @@ function CheckInContent() {
             </span>
           </div>
           
-          <ul className="space-y-4">
-            {attendees.map((user, index) => (
-              <li key={user.id} className="flex justify-between items-center bg-white/5 hover:bg-white/10 transition-colors px-5 py-4 md:py-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300 border border-white/5">
-                <div className="flex items-center space-x-4">
-                  <span className="text-purple-300 text-base md:text-lg font-black w-6 text-center">{attendees.length - index}</span>
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg border border-white/20">
-                    {user.name.charAt(0)}
+          <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4 style-scroll">
+            <ul className="space-y-4">
+              {attendees.map((user, index) => (
+                <li key={user.id} className="flex justify-between items-center bg-white/5 hover:bg-white/10 transition-colors px-5 py-4 md:py-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300 border border-white/5">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-purple-300 text-base md:text-lg font-black w-6 text-center">{attendees.length - index}</span>
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg border border-white/20">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-white text-lg md:text-xl tracking-wide">{user.name}</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-white text-lg md:text-xl tracking-wide">{user.name}</span>
-                  </div>
-                </div>
-                <span className="text-sm md:text-base text-purple-300 font-bold bg-black/20 px-3 py-1 rounded-lg">{user.time}</span>
-              </li>
-            ))}
-            {attendees.length === 0 && (
-              <li className="text-center text-purple-300/70 py-8 font-medium bg-black/10 rounded-2xl border border-white/5 border-dashed">
-                오늘의 첫 출석자가 되어보세요! ✨
-              </li>
-            )}
-          </ul>
+                  <span className="text-sm md:text-base text-purple-300 font-bold bg-black/20 px-3 py-1 rounded-lg">{user.time}</span>
+                </li>
+              ))}
+              {attendees.length === 0 && (
+                <li className="text-center text-purple-300/70 py-8 font-medium bg-black/10 rounded-2xl border border-white/5 border-dashed">
+                  오늘의 첫 출석자가 되어보세요! ✨
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
 
       </main>
