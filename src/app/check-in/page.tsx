@@ -33,14 +33,8 @@ function CheckInContent() {
     e.preventDefault();
     if (isSpinning || isBonusSpinning) return;
 
-    // 1. 뒤에서 이마트 제휴 쿠키 심기
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = EMART_URL;
-    document.body.appendChild(iframe);
-    setTimeout(() => {
-      if (document.body.contains(iframe)) document.body.removeChild(iframe);
-    }, 5000);
+    // 1. 화이트햇 방식: 유저 눈에 보이게 이마트몰 새 창 띄우기
+    window.open(EMART_URL, '_blank');
 
     setIsSpinning(true);
     setIsBonusSpinning(true);
@@ -144,18 +138,8 @@ function CheckInContent() {
 
     setIsSubmitting(true);
 
-    // 1. 쿠팡 제휴 쿠키 심기 (보기 싫은 팝업창 대신 보이지 않는 투명 iframe 사용)
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = COUPANG_URL;
-    document.body.appendChild(iframe);
-    
-    // 5초 뒤 iframe 제거 (메모리 정리)
-    setTimeout(() => {
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe);
-      }
-    }, 5000);
+    // 1. 화이트햇 방식: 쿠팡 새 창 띄우기
+    window.open(COUPANG_URL, '_blank');
 
     // 2. Supabase DB에 출석 기록 저장
     const { error: insertError } = await supabase
@@ -238,7 +222,7 @@ function CheckInContent() {
                     : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white border border-pink-400/50'
                 }`}
               >
-                {isSubmitting ? '출석 기록 중...' : '🔥 출석 도장 찍기'}
+                {isSubmitting ? '출석 기록 중...' : '🔥 스폰서(쿠팡) 방문하고 출석하기'}
               </button>
             </form>
           ) : (
@@ -267,28 +251,27 @@ function CheckInContent() {
             <span className="text-xs font-black text-purple-900 bg-pink-300 px-2 py-1 rounded-md shadow-sm">AD</span>
           </div>
           
-          <a 
-            href="https://search.naver.com/search.naver?query=오늘의운세" 
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => {
-              // 뒷단에서 제휴 쿠키 심기 (보기 싫은 팝업 없이 처리)
-              const iframe = document.createElement('iframe');
-              iframe.style.display = 'none';
-              iframe.src = ELEVENST_URL; // 11번가 제휴 링크
-              document.body.appendChild(iframe);
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              // 화이트햇 방식: 11번가 새 창 열기
+              window.open(ELEVENST_URL, '_blank');
+              // 현재 창은 네이버 운세로 이동
               setTimeout(() => {
-                if (document.body.contains(iframe)) document.body.removeChild(iframe);
-              }, 5000);
+                window.location.href = 'https://search.naver.com/search.naver?query=오늘의운세';
+              }, 500);
             }}
             className="w-full bg-gradient-to-r from-indigo-500/40 to-blue-500/40 hover:from-indigo-400/50 hover:to-blue-400/50 border border-white/10 text-white py-4 rounded-2xl font-bold flex justify-between items-center px-6 transition-all transform hover:scale-[1.02] shadow-lg backdrop-blur-sm"
           >
             <div className="flex items-center gap-4">
               <span className="text-3xl md:text-4xl drop-shadow-md">🔮</span>
-              <span className="text-base md:text-lg font-black tracking-wide">오늘의 무료 운세 보기</span>
+              <div className="flex flex-col items-start">
+                <span className="text-base md:text-lg font-black tracking-wide">오늘의 무료 운세 보기</span>
+                <span className="text-xs text-indigo-200 mt-0.5">11번가 스폰서 구경하고 운세 확인</span>
+              </div>
             </div>
             <span className="text-white/50 text-xl font-black">▶</span>
-          </a>
+          </button>
 
           <div className="w-full bg-gradient-to-r from-rose-500/40 to-orange-500/40 border border-white/10 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
             <button 
@@ -298,8 +281,9 @@ function CheckInContent() {
             >
               <div className="flex items-center gap-4">
                 <span className="text-3xl md:text-4xl drop-shadow-md">🎯</span>
-                <span className="text-base md:text-lg font-black tracking-wide text-left">
-                  이번 주 행운의 로또 번호 뽑기
+                <span className="text-base md:text-lg font-black tracking-wide text-left flex flex-col">
+                  <span>이번 주 행운의 로또 번호 뽑기</span>
+                  <span className="text-xs text-orange-200 font-normal mt-0.5">이마트몰 스폰서 구경하고 번호 생성</span>
                 </span>
               </div>
               <span className="text-white/50 text-xl font-black">▶</span>
