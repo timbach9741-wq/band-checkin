@@ -29,6 +29,37 @@ function CheckInContent() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isBonusSpinning, setIsBonusSpinning] = useState(false);
 
+  // 자체 운세 생성기 상태
+  const [fortune, setFortune] = useState<string | null>(null);
+
+  const generateFortune = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // 1. 화이트햇 방식: 11번가 스폰서 새 창 띄우기
+    window.open(ELEVENST_URL, '_blank');
+    
+    // 2. 쫄깃한 운세 생성 로직 (1.5초 로딩 후 결과 출력)
+    setFortune("🔮 우주의 기운을 모아 오늘의 운세를 풀이하는 중...");
+    
+    const fortunes = [
+      "✨ 오늘은 뜻밖의 재물이 들어올 수 있는 엄청난 길일입니다! 복권이라도 한 장?",
+      "🍀 생각지 못한 귀인을 만나 막혔던 일이 술술 풀릴 아주 상쾌한 운세입니다.",
+      "☕ 오늘은 조금 쉬어가세요. 따뜻한 커피 한 잔의 여유가 큰 행운을 부릅니다.",
+      "🏃‍♂️ 활기찬 에너지가 가득합니다! 오랫동안 미뤄둔 새로운 일에 과감히 도전해보세요.",
+      "💖 주변 사람들에게 따뜻한 카톡 하나 건네보세요. 2배의 기쁨으로 돌아옵니다.",
+      "🎯 원하던 목표에 한 걸음 더 다가가는 하루입니다. 포기하지 마세요!",
+      "🎁 기대하지 않았던 소소한 행운이나 선물을 받을 수 있는 기분 좋은 날입니다.",
+      "🛡️ 오랫동안 끙끙대며 고민하던 문제가 오늘은 눈 녹듯 자연스럽게 해결될 조짐입니다.",
+      "👑 오늘은 당신이 주인공! 어디서나 돋보이고 사람들의 시선을 한 몸에 받게 됩니다.",
+      "💸 금전운이 상승세입니다! 잊고 있던 꽁돈을 발견하거나 좋은 투자처가 보입니다."
+    ];
+    
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * fortunes.length);
+      setFortune(fortunes[randomIndex]);
+    }, 1500);
+  };
+
   const generateLotto = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isSpinning || isBonusSpinning) return;
@@ -251,27 +282,34 @@ function CheckInContent() {
             <span className="text-xs font-black text-purple-900 bg-pink-300 px-2 py-1 rounded-md shadow-sm">AD</span>
           </div>
           
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              // 화이트햇 방식: 11번가 새 창 열기
-              window.open(ELEVENST_URL, '_blank');
-              // 현재 창은 네이버 운세로 이동
-              setTimeout(() => {
-                window.location.href = 'https://search.naver.com/search.naver?query=오늘의운세';
-              }, 500);
-            }}
-            className="w-full bg-gradient-to-r from-indigo-500/40 to-blue-500/40 hover:from-indigo-400/50 hover:to-blue-400/50 border border-white/10 text-white py-4 rounded-2xl font-bold flex justify-between items-center px-6 transition-all transform hover:scale-[1.02] shadow-lg backdrop-blur-sm"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-3xl md:text-4xl drop-shadow-md">🔮</span>
-              <div className="flex flex-col items-start">
-                <span className="text-base md:text-lg font-black tracking-wide">오늘의 무료 운세 보기</span>
-                <span className="text-xs text-indigo-200 mt-0.5">11번가 스폰서 구경하고 운세 확인</span>
+          <div className="w-full bg-gradient-to-r from-indigo-500/40 to-blue-500/40 border border-white/10 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
+            <button 
+              onClick={generateFortune}
+              className="w-full text-white py-2 font-bold flex justify-between items-center px-2 transition-all transform hover:scale-[1.02]"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-3xl md:text-4xl drop-shadow-md">🔮</span>
+                <div className="flex flex-col items-start">
+                  <span className="text-base md:text-lg font-black tracking-wide">오늘의 무료 운세 보기</span>
+                  <span className="text-xs text-indigo-200 mt-0.5">11번가 스폰서 구경하고 운세 확인</span>
+                </div>
               </div>
-            </div>
-            <span className="text-white/50 text-xl font-black">▶</span>
-          </button>
+              <span className="text-white/50 text-xl font-black">▶</span>
+            </button>
+            
+            {/* 자체 운세 결과창 */}
+            {fortune && (
+              <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2 duration-500">
+                <div className={`p-4 rounded-xl text-center font-bold text-base md:text-lg shadow-inner ${
+                  fortune.includes("풀이하는 중") 
+                    ? "bg-black/20 text-indigo-200 animate-pulse" 
+                    : "bg-indigo-900/50 text-white border border-indigo-400/30"
+                }`}>
+                  {fortune}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="w-full bg-gradient-to-r from-rose-500/40 to-orange-500/40 border border-white/10 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
             <button 
