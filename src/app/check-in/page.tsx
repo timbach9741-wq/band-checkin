@@ -41,22 +41,55 @@ function CheckInContent() {
     // 2. 쫄깃한 운세 생성 로직 (1.5초 로딩 후 결과 출력)
     setFortune("🔮 우주의 기운을 모아 오늘의 운세를 풀이하는 중...");
     
-    const fortunes = [
-      "✨ 오늘은 뜻밖의 재물이 들어올 수 있는 엄청난 길일입니다! 복권이라도 한 장?",
-      "🍀 생각지 못한 귀인을 만나 막혔던 일이 술술 풀릴 아주 상쾌한 운세입니다.",
-      "☕ 오늘은 조금 쉬어가세요. 따뜻한 커피 한 잔의 여유가 큰 행운을 부릅니다.",
-      "🏃‍♂️ 활기찬 에너지가 가득합니다! 오랫동안 미뤄둔 새로운 일에 과감히 도전해보세요.",
-      "💖 주변 사람들에게 따뜻한 카톡 하나 건네보세요. 2배의 기쁨으로 돌아옵니다.",
-      "🎯 원하던 목표에 한 걸음 더 다가가는 하루입니다. 포기하지 마세요!",
-      "🎁 기대하지 않았던 소소한 행운이나 선물을 받을 수 있는 기분 좋은 날입니다.",
-      "🛡️ 오랫동안 끙끙대며 고민하던 문제가 오늘은 눈 녹듯 자연스럽게 해결될 조짐입니다.",
-      "👑 오늘은 당신이 주인공! 어디서나 돋보이고 사람들의 시선을 한 몸에 받게 됩니다.",
-      "💸 금전운이 상승세입니다! 잊고 있던 꽁돈을 발견하거나 좋은 투자처가 보입니다."
+    const parts1 = [
+      "상쾌한 에너지가 맴도는 오늘,",
+      "예상치 못한 두근거림이 기다리는 오늘,",
+      "평온하고 안정적인 기운이 가득한 오늘,",
+      "무언가 새로운 일을 시작하기 딱 좋은 오늘,",
+      "그동안의 노력이 빛을 발하기 시작하는 오늘,",
+      "주변 사람들의 따뜻한 시선이 집중되는 오늘,",
+      "우주의 긍정적인 기운이 당신을 향하는 오늘,",
+      "아침부터 왠지 모르게 기분이 상쾌한 오늘,",
+      "막혔던 고민이 서서히 풀려가는 오늘,",
+      "뜻밖의 행운이 당신의 문을 두드리는 오늘,"
     ];
     
+    const parts2 = [
+      "오랫동안 연락 끊겼던 지인에게 반가운 소식을 듣게 되거나,",
+      "평소 바랐던 작은 소망 하나가 마법처럼 이루어지며,",
+      "우연히 들른 곳에서 뜻밖의 이득을 얻게 되어,",
+      "직장이나 모임에서 당신의 능력을 크게 인정받아,",
+      "기다리던 반가운 택배나 선물이 도착하여,",
+      "사소한 오해가 풀리고 인간관계가 더욱 돈독해지며,",
+      "복권이나 경품 응모에서 작은 당첨의 기쁨을 누리게 되어,",
+      "평소 눈여겨보던 물건을 아주 좋은 조건에 얻게 되어,",
+      "가족이나 소중한 사람과 잊지 못할 행복한 추억을 만들게 되어,",
+      "우연한 기회에 큰 도움이 될 귀인을 만나게 되어,"
+    ];
+
+    const parts3 = [
+      "하루 종일 입가에 미소가 번질 완벽한 길일입니다!",
+      "금전운과 애정운이 동시에 상승하는 기분 좋은 하루가 될 것입니다.",
+      "마음의 평화와 안정을 찾는 아주 뜻깊은 하루가 예상됩니다.",
+      "당신의 매력이 200% 발산되는 화려한 하루가 될 것입니다.",
+      "저녁 즈음에 잊지 못할 짜릿한 이벤트를 경험하게 될 운세입니다.",
+      "어디를 가든 행운이 그림자처럼 따라다니는 멋진 날입니다.",
+      "오늘 하루만큼은 당신이 세상의 주인공이 될 것입니다!",
+      "지친 일상에 큰 활력소가 될 에너지가 충전되는 하루입니다.",
+      "새로운 도전을 하기에 이보다 더 완벽할 수 없는 날입니다.",
+      "마무리까지 모든 것이 순조로운, 그야말로 운수 대통인 하루입니다!"
+    ];
+
+    const colors = ["레드 🔴", "블루 🔵", "옐로우 🟡", "핑크 🌸", "퍼플 🟣", "그린 🟢", "오렌지 🟠", "네이비 🌌", "블랙 🌑", "화이트 ⚪"];
+    
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * fortunes.length);
-      setFortune(fortunes[randomIndex]);
+      const p1 = parts1[Math.floor(Math.random() * parts1.length)];
+      const p2 = parts2[Math.floor(Math.random() * parts2.length)];
+      const p3 = parts3[Math.floor(Math.random() * parts3.length)];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const number = Math.floor(Math.random() * 99) + 1;
+      
+      setFortune(`${p1} ${p2} ${p3}\n\n🎨 행운의 색상: ${color}\n🔢 행운의 숫자: ${number}`);
     }, 1500);
   };
 
@@ -300,7 +333,7 @@ function CheckInContent() {
             {/* 자체 운세 결과창 */}
             {fortune && (
               <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className={`p-4 rounded-xl text-center font-bold text-base md:text-lg shadow-inner ${
+                <div className={`p-4 rounded-xl text-center font-bold text-base md:text-lg shadow-inner whitespace-pre-wrap leading-relaxed ${
                   fortune.includes("풀이하는 중") 
                     ? "bg-black/20 text-indigo-200 animate-pulse" 
                     : "bg-indigo-900/50 text-white border border-indigo-400/30"
