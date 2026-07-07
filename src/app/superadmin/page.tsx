@@ -112,7 +112,7 @@ function SuperAdminDashboard() {
           const parts = user.split(':');
           if (parts.length >= 3) {
             acc[band].targetDays = parseInt(parts[1], 10);
-            acc[band].platform = parts[2];
+            acc[band].platform = parts[2].replace('___', '');
           }
           return acc;
         } else if (user.startsWith('___TARGET:')) {
