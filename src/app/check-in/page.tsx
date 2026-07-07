@@ -14,6 +14,7 @@ function CheckInContent() {
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [streakDays, setStreakDays] = useState(1);
   const [targetDays, setTargetDays] = useState(20);
+  const [platform, setPlatform] = useState<'band'|'daangn'|'kakao'>('band');
 
   // DB 연동된 실제 출석자 데이터 상태
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -171,18 +172,30 @@ function CheckInContent() {
   // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 DB에서 불러옵니다.
   useEffect(() => {
     async function fetchTodayAttendees() {
-      // 1. 목표 일수(targetDays) 설정 불러오기
+      // 1. 목표 일수 및 플랫폼 설정 불러오기
       const { data: settingData } = await supabase
         .from('attendance_logs')
         .select('nickname')
         .eq('band_id', bandId)
-        .like('nickname', '___TARGET:%')
+        .or('nickname.like.___TARGET:%,nickname.like.___CONFIG:%')
         .order('created_at', { ascending: false })
         .limit(1);
 
       if (settingData && settingData.length > 0) {
-        const match = settingData[0].nickname.match(/___TARGET:(\d+)___/);
-        if (match) setTargetDays(parseInt(match[1], 10));
+        const marker = settingData[0].nickname;
+        if (marker.startsWith('___CONFIG:')) {
+          const parts = marker.split(':');
+          if (parts.length >= 3) {
+            setTargetDays(parseInt(parts[1], 10));
+            setPlatform(parts[2] as 'band'|'daangn'|'kakao');
+          }
+        } else if (marker.startsWith('___TARGET:')) {
+          const match = marker.match(/___TARGET:(\d+)___/);
+          if (match) {
+            setTargetDays(parseInt(match[1], 10));
+            setPlatform('band');
+          }
+        }
       }
 
       // 2. 오늘 출석 멤버 불러오기
@@ -197,8 +210,8 @@ function CheckInContent() {
         .order('created_at', { ascending: false }); // 최신순 정렬
         
       if (data) {
-        // 통계용 마커(___TARGET:) 제외하고 리스트업
-        const formatted = data.filter((log: any) => !log.nickname.startsWith('___TARGET:')).map((log: any) => {
+        // 통계/설정용 마커(___TARGET:, ___CONFIG:) 제외하고 리스트업
+        const formatted = data.filter((log: any) => !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___CONFIG:')).map((log: any) => {
           const date = new Date(log.created_at);
           return {
             id: log.id,
@@ -282,7 +295,9 @@ function CheckInContent() {
             <form onSubmit={handleCheckIn} className="space-y-5 relative z-10">
               <div className="text-left mb-2">
                 <label className="block text-sm md:text-base font-bold text-purple-200 ml-1">
-                  밴드 프로필 이름 <span className="text-purple-400 font-normal">(실명 또는 닉네임)</span>
+                  {platform === 'daangn' && <>당근마켓 동네생활 닉네임 <span className="text-purple-400 font-normal">(프로필 이름)</span></>}
+                  {platform === 'kakao' && <>카카오톡 오픈채팅방 닉네임 <span className="text-purple-400 font-normal">(채팅방 프로필)</span></>}
+                  {platform === 'band' && <>밴드 프로필 이름 <span className="text-purple-400 font-normal">(실명 또는 닉네임)</span></>}
                 </label>
               </div>
               <input 
@@ -290,7 +305,11 @@ function CheckInContent() {
                 required
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder="활동하시는 이름을 적어주세요"
+                placeholder={
+                  platform === 'daangn' ? "당근마켓 활동 닉네임을 적어주세요" :
+                  platform === 'kakao' ? "채팅방에서 쓰시는 닉네임을 적어주세요" :
+                  "활동하시는 이름을 적어주세요"
+                }
                 className="w-full px-5 py-5 rounded-2xl bg-white/20 border-2 border-white/10 focus:outline-none focus:ring-4 focus:ring-pink-500/50 focus:border-pink-400 text-center text-xl md:text-2xl font-bold text-white placeholder-purple-300 transition-all backdrop-blur-sm"
               />
               <button 

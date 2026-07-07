@@ -13,9 +13,11 @@ function SuperAdminDashboard() {
   const [authFailed, setAuthFailed] = useState(false);
   const [periodInfo, setPeriodInfo] = useState({ start: '', end: '', daysLeft: 0 });
 
-  // 밴드 URL 생성기 상태
+  // 커뮤니티 URL 생성기 상태
   const [newBandName, setNewBandName] = useState('');
   const [newTargetDays, setNewTargetDays] = useState<number>(20);
+  const [newPlatform, setNewPlatform] = useState<'band' | 'daangn' | 'kakao'>('band');
+  const [activeTab, setActiveTab] = useState<'all' | 'band' | 'daangn' | 'kakao'>('all');
   const [generatedLinks, setGeneratedLinks] = useState<{checkIn: string, admin: string} | null>(null);
   const [origin, setOrigin] = useState('');
 
@@ -32,8 +34,8 @@ function SuperAdminDashboard() {
     }
     const safeName = newBandName.trim().replace(/\s+/g, '-').toLowerCase();
     
-    // DB에 목표 일수 마커 설정 삽입
-    await supabase.from('attendance_logs').insert([{ band_id: safeName, nickname: `___TARGET:${newTargetDays}___` }]);
+    // DB에 목표 일수 및 플랫폼 마커 설정 삽입
+    await supabase.from('attendance_logs').insert([{ band_id: safeName, nickname: `___CONFIG:${newTargetDays}:${newPlatform}___` }]);
     
     setGeneratedLinks({
       checkIn: `${origin}/check-in?band=${safeName}`,
@@ -71,11 +73,11 @@ function SuperAdminDashboard() {
         daysLeft
       });
 
-      // 1. 밴드 설정(목표 일수) 데이터 불러오기 (날짜 제한 없음)
+      // 1. 커뮤니티 설정(목표 일수 및 플랫폼) 데이터 불러오기 (날짜 제한 없음)
       const { data: settingsData } = await supabase
         .from('attendance_logs')
         .select('band_id, nickname, created_at')
-        .like('nickname', '___TARGET:%')
+        .or('nickname.like.___TARGET:%,nickname.like.___CONFIG:%')
         .order('created_at', { ascending: true });
 
       // 2. 이번 달 출석 데이터 불러오기
@@ -100,16 +102,25 @@ function SuperAdminDashboard() {
       const grouped = data.reduce((acc: any, log: any) => {
         const band = log.band_id;
         if (!acc[band]) {
-          acc[band] = { bandId: band, users: {}, totalCheckins: 0, todayCheckins: 0, targetDays: 20 };
+          acc[band] = { bandId: band, users: {}, totalCheckins: 0, todayCheckins: 0, targetDays: 20, platform: 'band' };
         }
         
         const user = log.nickname;
         
-        // 목표 일수 마커 파싱 (통계 제외)
-        if (user.startsWith('___TARGET:')) {
+        // 목표 일수 및 플랫폼 마커 파싱 (통계 제외)
+        if (user.startsWith('___CONFIG:')) {
+          const parts = user.split(':');
+          if (parts.length >= 3) {
+            acc[band].targetDays = parseInt(parts[1], 10);
+            acc[band].platform = parts[2];
+          }
+          return acc;
+        } else if (user.startsWith('___TARGET:')) {
+          // 구버전 하위 호환성 (플랫폼 기본값: band)
           const match = user.match(/___TARGET:(\d+)___/);
           if (match) {
             acc[band].targetDays = parseInt(match[1], 10);
+            acc[band].platform = 'band';
           }
           return acc; 
         }
@@ -185,7 +196,17 @@ function SuperAdminDashboard() {
     );
   }
 
-  const bandList = Object.values(bandStats);
+  let bandList = Object.values(bandStats);
+  if (activeTab !== 'all') {
+    bandList = bandList.filter((band: any) => band.platform === activeTab);
+  }
+
+  // 플랫폼별 표시 이름 매핑
+  const platformLabels: Record<string, string> = {
+    'band': '🟢 네이버 밴드',
+    'daangn': '🥕 당근마켓',
+    'kakao': '🟡 카카오톡'
+  };
 
   return (
     <div className="min-h-screen bg-[#111827] text-white p-4 md:p-8 font-sans pb-12">
@@ -224,18 +245,27 @@ function SuperAdminDashboard() {
           </div>
         </header>
 
-        {/* 신규 밴드 URL 생성기 */}
+        {/* 신규 커뮤니티 URL 생성기 */}
         <div className="bg-gray-800 p-6 md:p-8 rounded-3xl shadow-lg border border-gray-700">
           <h2 className="text-2xl font-bold text-gray-300 mb-6 flex items-center gap-2">
-            🔗 신규 밴드 제휴 링크 생성기
+            🔗 신규 커뮤니티 제휴 링크 생성기
           </h2>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <select
+              value={newPlatform}
+              onChange={(e) => setNewPlatform(e.target.value as any)}
+              className="bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer font-bold shrink-0"
+            >
+              <option value="band">🟢 네이버 밴드</option>
+              <option value="daangn">🥕 당근마켓</option>
+              <option value="kakao">🟡 카카오톡</option>
+            </select>
             <input 
               type="text" 
               value={newBandName}
               onChange={(e) => setNewBandName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleGenerateLink()}
-              placeholder="제휴할 밴드 이름 입력 (예: momcafe, soccer-club)" 
+              placeholder={`제휴할 ${platformLabels[newPlatform]?.split(' ')[1] || '커뮤니티'} 이름 (예: momcafe, soccer-club)`} 
               className="flex-1 bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
             />
             <select 
@@ -282,9 +312,26 @@ function SuperAdminDashboard() {
 
         {/* 밴드 목록 카드형 UI */}
         <div className="space-y-6 mt-8">
-          <h2 className="text-2xl font-bold text-gray-300 px-2 flex items-center gap-2">
-            📊 운영 중인 밴드 세부 현황
-          </h2>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
+            <h2 className="text-2xl font-bold text-gray-300 flex items-center gap-2">
+              📊 운영 중인 커뮤니티 세부 현황
+            </h2>
+            <div className="flex bg-gray-800 p-1.5 rounded-xl border border-gray-700 w-full md:w-auto overflow-x-auto hide-scrollbar">
+              {['all', 'band', 'daangn', 'kakao'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors ${
+                    activeTab === tab 
+                      ? 'bg-emerald-500 text-gray-900 shadow-md' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  {tab === 'all' ? '전체 보기' : platformLabels[tab]}
+                </button>
+              ))}
+            </div>
+          </div>
           
           {isLoading ? (
              <div className="bg-gray-800 rounded-3xl p-12 text-center text-gray-500 border border-gray-700 font-bold text-xl">
@@ -303,7 +350,10 @@ function SuperAdminDashboard() {
                   <div key={band.bandId} className="bg-gray-800 p-6 md:p-8 rounded-3xl border border-gray-700 hover:border-gray-500 transition-colors shadow-lg">
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex flex-col gap-2">
-                        <h3 className="text-3xl font-black text-white">{band.bandId}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{platformLabels[band.platform]?.split(' ')[0] || '🟢'}</span>
+                          <h3 className="text-3xl font-black text-white">{band.bandId}</h3>
+                        </div>
                         <span className="bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-md text-sm font-bold border border-blue-500/20 inline-block w-max mt-1">
                           시즌 마감 D-{periodInfo.daysLeft} ({periodInfo.end} 까지)
                         </span>
