@@ -136,7 +136,7 @@ function AdminDashboard() {
         {/* 랭킹 표 */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/50">
-            <h2 className="text-2xl font-extrabold text-gray-800">이달의 출석 우수자 랭킹 🏆</h2>
+            <h2 className="text-2xl font-extrabold text-gray-800">{new Date().getMonth() + 1}월 출석 우수자 랭킹 🏆</h2>
             <p className="text-base text-gray-500 mt-2 font-medium">20일 이상 출석자는 커피 쿠폰 대상자로 자동 분류됩니다.</p>
           </div>
           

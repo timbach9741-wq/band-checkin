@@ -158,18 +158,12 @@ export default function Home() {
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
                   <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
-                  경품 응모 목표 일수 (추천: 20일)
+                  경품 응모 목표 일수 (자동 세팅)
                 </label>
-                <select 
-                  value={newTargetDays}
-                  onChange={(e) => setNewTargetDays(Number(e.target.value))}
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-lg focus:outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer font-bold"
-                >
-                  <option value={10}>🎯 한 달 10일 출석 시 경품 응모</option>
-                  <option value={15}>🎯 한 달 15일 출석 시 경품 응모</option>
-                  <option value={20}>🎯 한 달 20일 출석 시 경품 응모 (가장 인기)</option>
-                  <option value={30}>🎯 한 달 30일 출석 시 경품 응모</option>
-                </select>
+                <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-lg font-bold flex items-center gap-2">
+                  🎯 한 달 20일 출석 시 경품 응모
+                </div>
+                <p className="text-xs text-slate-500 ml-2 font-medium">※ 누구나 포기하지 않고 참여할 수 있는 최적의 일수인 20일로 자동 세팅됩니다.</p>
               </div>
 
               {/* 생성 버튼 */}

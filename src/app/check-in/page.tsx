@@ -186,13 +186,13 @@ function CheckInContent() {
         if (marker.startsWith('___CONFIG:')) {
           const parts = marker.split(':');
           if (parts.length >= 3) {
-            setTargetDays(parseInt(parts[1], 10));
+            setTargetDays(20); // 모든 방 강제 20일 세팅
             setPlatform(parts[2] as 'band'|'daangn'|'kakao');
           }
         } else if (marker.startsWith('___TARGET:')) {
           const match = marker.match(/___TARGET:(\d+)___/);
           if (match) {
-            setTargetDays(parseInt(match[1], 10));
+            setTargetDays(20); // 모든 방 강제 20일 세팅
             setPlatform('band');
           }
         }
@@ -288,7 +288,7 @@ function CheckInContent() {
               매일매일 출석하고<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-400">커피 쿠폰</span> 받아가세요!
             </h2>
-            <p className="text-base md:text-lg text-purple-200 font-medium mt-3 bg-black/20 inline-block px-4 py-1.5 rounded-full">한 달 {targetDays}일 이상 출석 시 자동 응모 🎁</p>
+            <p className="text-base md:text-lg text-purple-200 font-medium mt-3 bg-black/20 inline-block px-4 py-1.5 rounded-full">{new Date().getMonth() + 1}월 20일 출석 달성 시 자동 응모 🎁</p>
           </div>
 
           {!hasCheckedIn ? (
@@ -330,7 +330,7 @@ function CheckInContent() {
               <div className="text-5xl md:text-6xl mb-4 animate-bounce">🎉</div>
               <h3 className="font-extrabold text-2xl md:text-3xl text-white drop-shadow-md">출석이 완료되었습니다!</h3>
               <p className="text-lg md:text-xl mt-3 text-emerald-200 font-medium">
-                이번 달 누적 <span className="font-black bg-emerald-500 text-white px-4 py-1.5 rounded-lg mx-1 shadow-lg shadow-emerald-500/50">{streakDays}일째</span> 출석입니다!
+                {new Date().getMonth() + 1}월 누적 <span className="font-black bg-emerald-500 text-white px-4 py-1.5 rounded-lg mx-1 shadow-lg shadow-emerald-500/50">{streakDays}일째</span> 출석입니다!
               </p>
             </div>
           )}
