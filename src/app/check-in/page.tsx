@@ -177,6 +177,7 @@ function CheckInContent() {
         .select('nickname')
         .eq('band_id', bandId)
         .like('nickname', '___TARGET:%')
+        .order('created_at', { ascending: false })
         .limit(1);
 
       if (settingData && settingData.length > 0) {

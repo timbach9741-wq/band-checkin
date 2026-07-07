@@ -74,8 +74,9 @@ function SuperAdminDashboard() {
       // 1. 밴드 설정(목표 일수) 데이터 불러오기 (날짜 제한 없음)
       const { data: settingsData } = await supabase
         .from('attendance_logs')
-        .select('band_id, nickname')
-        .like('nickname', '___TARGET:%');
+        .select('band_id, nickname, created_at')
+        .like('nickname', '___TARGET:%')
+        .order('created_at', { ascending: true });
 
       // 2. 이번 달 출석 데이터 불러오기
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
