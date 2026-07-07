@@ -76,7 +76,11 @@ export default function Home() {
         <div className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center gap-2">
           <span>✨</span> 커뮤니티 부스터
         </div>
-        <a href="mailto:contact@example.com" className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">
+        <a 
+          href="mailto:timbach@naver.com" 
+          onClick={() => alert('timbach@naver.com 으로 문의하세요!')}
+          className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+        >
           제휴 문의
         </a>
       </header>
