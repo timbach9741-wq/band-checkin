@@ -40,8 +40,11 @@ function AdminDashboard() {
         return;
       }
 
+      // 순수 출석 유저만 필터링 (설정 마커 제외)
+      const validData = data.filter((log: any) => !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___TARGET:'));
+
       // 닉네임별로 그룹화하여 출석 횟수 계산
-      const userStats = data.reduce((acc: any, log: any) => {
+      const userStats = validData.reduce((acc: any, log: any) => {
         if (!acc[log.nickname]) {
           acc[log.nickname] = { 
             name: log.nickname, 
