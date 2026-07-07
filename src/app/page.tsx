@@ -35,16 +35,18 @@ export default function Home() {
     
     try {
       const safeName = newBandName.trim().replace(/\s+/g, '-').toLowerCase();
+      // 이름 중복 방지를 위한 랜덤 고유 코드 4자리 추가 (예: 데일리-a1b2)
+      const uniqueId = `${safeName}-${Math.random().toString(36).substring(2, 6)}`;
       
       const { error } = await supabase.from('attendance_logs').insert([
-        { band_id: safeName, nickname: `___CONFIG:${newTargetDays}:${newPlatform}___` }
+        { band_id: uniqueId, nickname: `___CONFIG:${newTargetDays}:${newPlatform}___` }
       ]);
 
       if (error) throw error;
       
       setGeneratedLinks({
-        checkIn: `${origin}/check-in?band=${safeName}`,
-        admin: `${origin}/admin?band=${safeName}&pw=1234`
+        checkIn: `${origin}/check-in?band=${uniqueId}`,
+        admin: `${origin}/admin?band=${uniqueId}&pw=1234`
       });
     } catch (err) {
       console.error(err);
