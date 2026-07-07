@@ -13,6 +13,7 @@ function CheckInContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [streakDays, setStreakDays] = useState(1);
+  const [targetDays, setTargetDays] = useState(20);
 
   // DB 연동된 실제 출석자 데이터 상태
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -168,9 +169,23 @@ function CheckInContent() {
     }, 100);
   };
 
-  // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터를 DB에서 불러옵니다.
+  // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 DB에서 불러옵니다.
   useEffect(() => {
     async function fetchTodayAttendees() {
+      // 1. 목표 일수(targetDays) 설정 불러오기
+      const { data: settingData } = await supabase
+        .from('attendance_logs')
+        .select('nickname')
+        .eq('band_id', bandId)
+        .like('nickname', '___TARGET:%')
+        .limit(1);
+
+      if (settingData && settingData.length > 0) {
+        const match = settingData[0].nickname.match(/___TARGET:(\d+)___/);
+        if (match) setTargetDays(parseInt(match[1], 10));
+      }
+
+      // 2. 오늘 출석 멤버 불러오기
       const today = new Date();
       today.setHours(0, 0, 0, 0); // 오늘 자정 기준
       
@@ -182,7 +197,8 @@ function CheckInContent() {
         .order('created_at', { ascending: false }); // 최신순 정렬
         
       if (data) {
-        const formatted = data.map((log: any) => {
+        // 통계용 마커(___TARGET:) 제외하고 리스트업
+        const formatted = data.filter((log: any) => !log.nickname.startsWith('___TARGET:')).map((log: any) => {
           const date = new Date(log.created_at);
           return {
             id: log.id,
@@ -259,7 +275,7 @@ function CheckInContent() {
               매일매일 출석하고<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-400">커피 쿠폰</span> 받아가세요!
             </h2>
-            <p className="text-base md:text-lg text-purple-200 font-medium mt-3 bg-black/20 inline-block px-4 py-1.5 rounded-full">한 달 20일 이상 출석 시 자동 응모 🎁</p>
+            <p className="text-base md:text-lg text-purple-200 font-medium mt-3 bg-black/20 inline-block px-4 py-1.5 rounded-full">한 달 {targetDays}일 이상 출석 시 자동 응모 🎁</p>
           </div>
 
           {!hasCheckedIn ? (

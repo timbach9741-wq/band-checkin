@@ -15,6 +15,7 @@ function SuperAdminDashboard() {
 
   // 밴드 URL 생성기 상태
   const [newBandName, setNewBandName] = useState('');
+  const [newTargetDays, setNewTargetDays] = useState<number>(20);
   const [generatedLinks, setGeneratedLinks] = useState<{checkIn: string, admin: string} | null>(null);
   const [origin, setOrigin] = useState('');
 
@@ -24,12 +25,16 @@ function SuperAdminDashboard() {
     }
   }, []);
 
-  const handleGenerateLink = () => {
+  const handleGenerateLink = async () => {
     if (!newBandName.trim()) {
       alert('밴드 이름을 입력해주세요 (영문/숫자 추천)');
       return;
     }
     const safeName = newBandName.trim().replace(/\s+/g, '-').toLowerCase();
+    
+    // DB에 목표 일수 마커 설정 삽입
+    await supabase.from('attendance_logs').insert([{ band_id: safeName, nickname: `___TARGET:${newTargetDays}___` }]);
+    
     setGeneratedLinks({
       checkIn: `${origin}/check-in?band=${safeName}`,
       admin: `${origin}/admin?band=${safeName}&pw=1234` // 초기 기본 비밀번호
@@ -83,7 +88,18 @@ function SuperAdminDashboard() {
       const grouped = data.reduce((acc: any, log: any) => {
         const band = log.band_id;
         if (!acc[band]) {
-          acc[band] = { bandId: band, users: {}, totalCheckins: 0, todayCheckins: 0 };
+          acc[band] = { bandId: band, users: {}, totalCheckins: 0, todayCheckins: 0, targetDays: 20 };
+        }
+        
+        const user = log.nickname;
+        
+        // 목표 일수 마커 파싱 (통계 제외)
+        if (user.startsWith('___TARGET:')) {
+          const match = user.match(/___TARGET:(\d+)___/);
+          if (match) {
+            acc[band].targetDays = parseInt(match[1], 10);
+          }
+          return acc; 
         }
         
         acc[band].totalCheckins += 1;
@@ -119,7 +135,7 @@ function SuperAdminDashboard() {
   }, [password]);
 
   // 개별 밴드 엑셀(CSV) 다운로드 기능
-  const downloadBandCSV = (bandId: string, usersObj: any) => {
+  const downloadBandCSV = (bandId: string, usersObj: any, targetDays: number = 20) => {
     // 유저들을 출석일수 내림차순 정렬
     const users = Object.values(usersObj).sort((a: any, b: any) => b.days - a.days);
     
@@ -127,10 +143,10 @@ function SuperAdminDashboard() {
     csvContent += '순위,닉네임,누적출석일,최근출석시간,상태\n';
     
     users.forEach((user: any, index: number) => {
-      const isWinner = user.days >= 20;
+      const isWinner = user.days >= targetDays;
       const date = new Date(user.lastCheckIn);
       const formattedDate = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-      const status = isWinner ? '달성 완료' : `${20 - user.days}일 남음`;
+      const status = isWinner ? '달성 완료' : `${targetDays - user.days}일 남음`;
       
       const row = `${index + 1},${user.name},${user.days}일,${formattedDate},${status}`;
       csvContent += row + '\n';
@@ -211,6 +227,16 @@ function SuperAdminDashboard() {
               placeholder="제휴할 밴드 이름 입력 (예: momcafe, soccer-club)" 
               className="flex-1 bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
             />
+            <select 
+              value={newTargetDays}
+              onChange={(e) => setNewTargetDays(Number(e.target.value))}
+              className="bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer font-bold"
+            >
+              <option value={10}>🎯 10일 출석</option>
+              <option value={15}>🎯 15일 출석</option>
+              <option value={20}>🎯 20일 출석</option>
+              <option value={30}>🎯 30일 출석</option>
+            </select>
             <button 
               onClick={handleGenerateLink}
               className="bg-emerald-500 hover:bg-emerald-400 text-gray-900 font-black px-8 py-4 rounded-xl text-lg transition-colors shrink-0"
@@ -297,7 +323,7 @@ function SuperAdminDashboard() {
                     </div>
 
                     <button 
-                      onClick={() => downloadBandCSV(band.bandId, band.users)}
+                      onClick={() => downloadBandCSV(band.bandId, band.users, band.targetDays)}
                       className="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-900 text-lg font-black py-4 rounded-2xl transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                     >
                       📥 {band.bandId} 명단 개별 추출
