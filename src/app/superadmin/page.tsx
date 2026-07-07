@@ -113,7 +113,6 @@ function SuperAdminDashboard() {
           acc[band].todayCheckins += 1;
         }
         
-        const user = log.nickname;
         if (!acc[band].users[user]) {
           acc[band].users[user] = { name: user, days: 0, lastCheckIn: log.created_at };
         }
