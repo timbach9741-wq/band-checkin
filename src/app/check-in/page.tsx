@@ -18,8 +18,7 @@ function CheckInContent() {
   // DB 연동된 실제 출석자 데이터 상태
   const [attendees, setAttendees] = useState<any[]>([]);
 
-  // [임시 제휴 링크 설정] 
-  // 고객님이 추후 애드픽에서 캠페인을 생성하신 뒤, 실제 주소로 변경해주시면 됩니다.
+  // 고객님의 실제 제휴(애드픽/쿠팡) 수익 창출 링크
   const COUPANG_URL = 'https://bitl.bz/4aadvo'; // 1. 쿠팡 (출석체크용)
   const ELEVENST_URL = 'https://bitl.bz/04CdRt'; // 2. 11번가 (운세용)
   const EMART_URL = 'https://bitl.bz/ZDWuPt'; // 3. SSG (로또용)
