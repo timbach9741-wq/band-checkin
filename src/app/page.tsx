@@ -98,7 +98,7 @@ export default function Home() {
               유령 회원도 말하게 만드는<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500">압도적 무료 출석체크 이벤트</span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-600 font-medium max-w-2xl mx-auto mt-6 leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-600 font-medium max-w-2xl mx-auto mt-6 leading-relaxed break-keep">
               방장님 사비 지출 0원! 10초 만에 이벤트를 만들고 방을 활성화하세요.<br className="hidden md:block" />
               <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded font-bold mx-1 border border-yellow-200">비용 전액 무료</span> 
               경품 비용은 저희 스폰서 광고 수익으로 전액 충당됩니다.
@@ -240,21 +240,21 @@ export default function Home() {
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">1</div>
                 <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">10초 만에 링크 발급</h3>
-                <p className="text-slate-600 font-medium text-sm leading-relaxed">
+                <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
                   위 폼에 모임 이름을 적고 버튼을 눌러 우리 모임만의 고유한 출석체크 링크를 발급받으세요.
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">2</div>
                 <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">모임 공지사항 등록</h3>
-                <p className="text-slate-600 font-medium text-sm leading-relaxed">
+                <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
                   발급받은 '회원용 링크'를 밴드나 단톡방 공지사항에 고정하고 유저들에게 이벤트 시작을 알리세요!
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">3</div>
                 <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">당첨자 확인 및 추첨</h3>
-                <p className="text-slate-600 font-medium text-sm leading-relaxed">
+                <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
                   월말에 '방장용 관리자 링크'에 접속해 목표를 달성한 명단을 엑셀로 뽑고 기프티콘을 쏘면 끝!
                 </p>
               </div>
@@ -276,7 +276,7 @@ export default function Home() {
               <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-lg transition-all">
                 <div className="text-5xl mb-4">🎯</div>
                 <h3 className="text-xl font-black text-slate-800 mb-3">스마트 자동 랭킹 집계</h3>
-                <p className="text-slate-600 text-sm leading-relaxed font-medium">
+                <p className="text-slate-600 text-sm leading-relaxed font-medium break-keep">
                   누가누가 가장 열심히 활동할까요? 유저들이 출석할 때마다 실시간으로 누적 출석일과 오늘의 랭킹이 표시되어 경쟁심을 유발합니다.
                 </p>
               </div>
@@ -284,7 +284,7 @@ export default function Home() {
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 hover:shadow-lg transition-all">
                 <div className="text-5xl mb-4">🔮</div>
                 <h3 className="text-xl font-black text-indigo-900 mb-3">매일매일 무료 운세</h3>
-                <p className="text-indigo-700/80 text-sm leading-relaxed font-medium">
+                <p className="text-indigo-700/80 text-sm leading-relaxed font-medium break-keep">
                   "오늘의 내 행운의 컬러는?" 아침마다 유저들이 스스로 접속해서 무료 운세를 확인하게 만드는 강력한 미끼 기능이 탑재되어 있습니다.
                 </p>
               </div>
@@ -292,7 +292,7 @@ export default function Home() {
               <div className="bg-gradient-to-br from-orange-50 to-rose-50 rounded-3xl p-8 border border-orange-100 hover:shadow-lg transition-all">
                 <div className="text-5xl mb-4">🎰</div>
                 <h3 className="text-xl font-black text-orange-900 mb-3">로또 번호 자동 추첨기</h3>
-                <p className="text-orange-700/80 text-sm leading-relaxed font-medium">
+                <p className="text-orange-700/80 text-sm leading-relaxed font-medium break-keep">
                   실제 당첨 알고리즘을 분석한 현실적인 로또 번호 생성기! 쫄깃한 룰렛 애니메이션으로 유저들의 체류 시간을 극대화합니다.
                 </p>
               </div>
