@@ -71,18 +71,29 @@ function SuperAdminDashboard() {
         daysLeft
       });
 
-      // 전체 데이터 불러오기 (band_id 조건 없이 전부)
-      const { data, error } = await supabase
+      // 1. 밴드 설정(목표 일수) 데이터 불러오기 (날짜 제한 없음)
+      const { data: settingsData } = await supabase
+        .from('attendance_logs')
+        .select('band_id, nickname')
+        .like('nickname', '___TARGET:%');
+
+      // 2. 이번 달 출석 데이터 불러오기
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const { data: checkinData, error } = await supabase
         .from('attendance_logs')
         .select('*')
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString());
-
+        .gte('created_at', firstDayOfMonth.toISOString())
+        .order('created_at', { ascending: false });
+        
       if (error) {
         console.error(error);
         setIsLoading(false);
         return;
       }
+
+      // 두 데이터 병합
+      const data = [...(settingsData || []), ...(checkinData || [])];
 
       // 밴드별로 1차 그룹화, 그 안에서 유저별로 2차 그룹화
       const grouped = data.reduce((acc: any, log: any) => {
