@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://band-checkin.vercel.app'),
   title: "🎁 오늘의 출석체크 & 혜택",
   description: "지금 바로 출석 도장을 찍고 무료 운세와 로또 번호 혜택을 받아가세요!",
   openGraph: {
