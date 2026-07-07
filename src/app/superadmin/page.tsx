@@ -196,7 +196,7 @@ function SuperAdminDashboard() {
     );
   }
 
-  let bandList = Object.values(bandStats);
+  let bandList = Object.values(bandStats).filter((band: any) => band.bandId !== 'default' && band.bandId !== '청개천');
   if (activeTab !== 'all') {
     bandList = bandList.filter((band: any) => band.platform === activeTab);
   }
