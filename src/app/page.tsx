@@ -108,13 +108,32 @@ export default function Home() {
         <div className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center gap-2">
           <span>✨</span> 커뮤니티 부스터
         </div>
-        <a 
-          href="mailto:timbach@naver.com" 
-          onClick={() => alert('timbach@naver.com 으로 문의하세요!')}
-          className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
-        >
-          제휴 문의
-        </a>
+        <div className="flex items-center gap-4">
+          <a 
+            href="https://t.me/YOUR_TELEGRAM_LINK" 
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
+            }}
+            className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1"
+          >
+            <span className="text-base">✈️</span> 문의하기
+          </a>
+          <a 
+            href="https://t.me/YOUR_TELEGRAM_LINK" 
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
+            }}
+            className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+          >
+            제휴 문의
+          </a>
+        </div>
       </header>
 
       <main className="flex flex-col items-center">
@@ -413,10 +432,12 @@ export default function Home() {
 
       {/* 우측 하단 플로팅 문의하기 버튼 */}
       <a 
-        href="#"
+        href="https://t.me/YOUR_TELEGRAM_LINK"
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={(e) => {
           e.preventDefault();
-          alert('대표님의 카카오톡 오픈채팅(또는 채널) 주소로 연결됩니다.\n(현재는 임시 주소이며, 대표님의 주소를 알려주시면 연결해 드립니다!)');
+          alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
         }}
         className="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-2xl hover:bg-slate-700 hover:scale-105 transition-all z-50 flex items-center justify-center gap-2 group"
       >

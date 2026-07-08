@@ -140,13 +140,13 @@ function AdminDashboard() {
 
           <div className="mt-8 pt-6 border-t border-slate-700">
             <a 
-              href="https://open.kakao.com/o/YOUR_LINK_HERE" 
+              href="https://t.me/YOUR_TELEGRAM_LINK" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-slate-400 text-sm hover:text-white underline decoration-slate-500 underline-offset-4 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                alert('대표님의 카카오톡 오픈채팅(또는 채널) 주소로 연결됩니다.\n(현재는 임시 주소이며, 대표님의 주소를 알려주시면 연결해 드립니다!)');
+                alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
               }}
             >
               비밀번호를 잊으셨나요? 문의하기
