@@ -381,6 +381,32 @@ export default function SuperadminPage() {
                           </button>
                         </div>
 
+                        {/* 방 관리자 정보 */}
+                        <div className="bg-white p-3 rounded-xl border border-slate-200 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                          <div className="text-sm font-bold text-slate-700">
+                            <span className="text-slate-400 mr-2">관리자 암호:</span>
+                            <span className="bg-slate-100 text-slate-800 px-2 py-1 rounded tracking-widest">{band.pin || '미설정'}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => {
+                                const url = `${window.location.origin}/admin?band=${band.bandId}`;
+                                navigator.clipboard.writeText(url);
+                                alert('방 관리자 링크가 복사되었습니다!');
+                              }}
+                              className="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 transition-colors">
+                              🔗 관리자 링크 복사
+                            </button>
+                            <button onClick={() => {
+                                const url = `${window.location.origin}/check-in?band=${band.bandId}`;
+                                navigator.clipboard.writeText(url);
+                                alert('출석체크(유저용) 링크가 복사되었습니다!');
+                              }}
+                              className="text-xs bg-pink-50 text-pink-600 hover:bg-pink-100 px-3 py-1.5 rounded-lg font-bold border border-pink-200 transition-colors">
+                              🔗 출석체크 링크 복사
+                            </button>
+                          </div>
+                        </div>
+
                         {/* 달성자 전광판 송출 영역 */}
                         {band.winners && band.winners.length > 0 && (
                           <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-200 mb-4">

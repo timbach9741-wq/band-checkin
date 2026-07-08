@@ -222,6 +222,7 @@ export async function POST(req: Request) {
           platform: configPayload.platform,
           totalMembers,
           contactInfo: configPayload.contactInfo,
+          pin: configPayload.pin,
           banned: configPayload.banned === true,
           activeMembers,
           participationRate: isNaN(participationRate) ? 0 : participationRate,

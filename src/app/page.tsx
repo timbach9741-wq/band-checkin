@@ -247,6 +247,7 @@ export default function Home() {
                   <input 
                     type="password" 
                     inputMode="numeric"
+                    autoComplete="new-password"
                     pattern="[0-9]*"
                     maxLength={4}
                     value={pin}
