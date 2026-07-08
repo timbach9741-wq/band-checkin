@@ -137,6 +137,21 @@ function AdminDashboard() {
             <button onClick={() => handleNumberClick('0')} className="h-16 text-2xl font-bold text-white bg-slate-700/50 hover:bg-slate-600 rounded-2xl active:scale-95 transition-all">0</button>
             <button onClick={handleDelete} className="h-16 text-2xl font-bold text-slate-300 hover:text-white rounded-2xl active:scale-95 transition-all">⌫</button>
           </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-700">
+            <a 
+              href="https://open.kakao.com/o/YOUR_LINK_HERE" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-slate-400 text-sm hover:text-white underline decoration-slate-500 underline-offset-4 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                alert('대표님의 카카오톡 오픈채팅(또는 채널) 주소로 연결됩니다.\n(현재는 임시 주소이며, 대표님의 주소를 알려주시면 연결해 드립니다!)');
+              }}
+            >
+              비밀번호를 잊으셨나요? 문의하기
+            </a>
+          </div>
         </div>
       </div>
     );

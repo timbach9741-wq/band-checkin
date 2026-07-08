@@ -410,6 +410,21 @@ export default function Home() {
         </footer>
 
       </main>
+
+      {/* 우측 하단 플로팅 문의하기 버튼 */}
+      <a 
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          alert('대표님의 카카오톡 오픈채팅(또는 채널) 주소로 연결됩니다.\n(현재는 임시 주소이며, 대표님의 주소를 알려주시면 연결해 드립니다!)');
+        }}
+        className="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-2xl hover:bg-slate-700 hover:scale-105 transition-all z-50 flex items-center justify-center gap-2 group"
+      >
+        <span className="text-xl">💬</span>
+        <span className="text-sm font-bold max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[200px] transition-all duration-300 ease-in-out">
+          관리자 문의하기
+        </span>
+      </a>
     </div>
   );
 }
