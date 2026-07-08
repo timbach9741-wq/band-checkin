@@ -109,18 +109,43 @@ export default function Home() {
           <span>✨</span> 커뮤니티 부스터
         </div>
         <div className="flex items-center gap-4">
-          <a 
-            href="https://t.me/YOUR_TELEGRAM_LINK" 
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
-            }}
-            className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1"
-          >
-            <span className="text-base">✈️</span> 문의하기
-          </a>
+          {/* 직관적인 문의하기 드롭다운 */}
+          <div className="relative group">
+            <button className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1 py-2">
+              <span className="text-base">✈️</span> 링크 / 암호 찾기 ▾
+            </button>
+            <div className="absolute right-0 top-full w-72 bg-white border border-slate-200 shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col gap-1 z-50">
+              <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-100 mb-1">어떤 문제가 있으신가요? (텔레그램 연결)</div>
+              <a 
+                href="https://t.me/YOUR_TELEGRAM_LINK" 
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              >
+                🤔 관리자 비밀번호를 잊어버리셨나요?
+              </a>
+              <a 
+                href="https://t.me/YOUR_TELEGRAM_LINK" 
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              >
+                🤔 관리자 접속 링크를 잊어버리셨나요?
+              </a>
+              <a 
+                href="https://t.me/YOUR_TELEGRAM_LINK" 
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              >
+                🤔 회원용 출석체크 링크를 분실하셨나요?
+              </a>
+            </div>
+          </div>
+
           <a 
             href="https://t.me/YOUR_TELEGRAM_LINK" 
             target="_blank"
@@ -430,22 +455,7 @@ export default function Home() {
 
       </main>
 
-      {/* 우측 하단 플로팅 문의하기 버튼 */}
-      <a 
-        href="https://t.me/YOUR_TELEGRAM_LINK"
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => {
-          e.preventDefault();
-          alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
-        }}
-        className="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-2xl hover:bg-slate-700 hover:scale-105 transition-all z-50 flex items-center justify-center gap-2 group"
-      >
-        <span className="text-xl">💬</span>
-        <span className="text-sm font-bold max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-[200px] transition-all duration-300 ease-in-out">
-          관리자 문의하기
-        </span>
-      </a>
+      </main>
     </div>
   );
 }
