@@ -186,15 +186,14 @@ export default function Home() {
               >
                 🤔 회원용 출석체크 링크를 분실하셨나요?
               </button>
+              <button 
+                onClick={() => handleOpenInquiry('그외 기타 문의')}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors w-full"
+              >
+                🤔 그외 기타 문의사항이 있으신가요?
+              </button>
             </div>
           </div>
-
-          <button 
-            onClick={() => handleOpenInquiry('제휴 및 기타 문의')}
-            className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
-          >
-            제휴 문의
-          </button>
         </div>
       </header>
 
