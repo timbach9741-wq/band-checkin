@@ -1,410 +1,233 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabaseClient';
+import { useState } from 'react';
 
-function SuperAdminDashboard() {
-  const searchParams = useSearchParams();
-  const password = searchParams.get('pw');
+export default function SuperadminPage() {
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
-  const [bandStats, setBandStats] = useState<any>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [authFailed, setAuthFailed] = useState(false);
-  const [periodInfo, setPeriodInfo] = useState({ start: '', end: '', daysLeft: 0 });
+  const [bands, setBands] = useState<any[]>([]);
 
-  // 커뮤니티 URL 생성기 상태
-  const [newBandName, setNewBandName] = useState('');
-  const [newTargetDays, setNewTargetDays] = useState<number>(20);
-  const [newPlatform, setNewPlatform] = useState<'band' | 'daangn' | 'kakao'>('band');
-  const [activeTab, setActiveTab] = useState<'all' | 'band' | 'daangn' | 'kakao'>('all');
-  const [generatedLinks, setGeneratedLinks] = useState<{checkIn: string, admin: string} | null>(null);
-  const [origin, setOrigin] = useState('');
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
-  }, []);
-
-  const handleGenerateLink = async () => {
-    if (!newBandName.trim()) {
-      alert('밴드 이름을 입력해주세요 (영문/숫자 추천)');
-      return;
-    }
-    const safeName = newBandName.trim().replace(/\s+/g, '-').toLowerCase();
-    
-    // DB에 목표 일수 및 플랫폼 마커 설정 삽입
-    await supabase.from('attendance_logs').insert([{ band_id: safeName, nickname: `___CONFIG:${newTargetDays}:${newPlatform}___` }]);
-    
-    setGeneratedLinks({
-      checkIn: `${origin}/check-in?band=${safeName}`,
-      admin: `${origin}/admin?band=${safeName}&pw=1234` // 초기 기본 비밀번호
-    });
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      alert(`${label} 복사되었습니다!\n\n${text}`);
-    }).catch(() => {
-      alert('복사에 실패했습니다. 직접 드래그해서 복사해주세요.');
-    });
-  };
-
-  useEffect(() => {
-    // 1. 마스터 비밀번호 검증 (고객님이 지정하신 강력한 비밀번호)
-    if (password !== 'timbach9741@@') {
-      setAuthFailed(true);
-      setIsLoading(false);
-      return;
-    }
-
-    async function fetchAllStats() {
-      const now = new Date();
-      // 이벤트는 "매월 1일부터 말일"을 한 시즌(프로모션)으로 계산합니다.
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-      
-      // 프로모션 기간 마감일(D-Day) 계산
-      const daysLeft = Math.ceil((endOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      setPeriodInfo({
-        start: `${startOfMonth.getFullYear()}.${String(startOfMonth.getMonth()+1).padStart(2, '0')}.${String(startOfMonth.getDate()).padStart(2, '0')}`,
-        end: `${endOfMonth.getFullYear()}.${String(endOfMonth.getMonth()+1).padStart(2, '0')}.${String(endOfMonth.getDate()).padStart(2, '0')}`,
-        daysLeft
+  const fetchBands = async (pw: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'fetchDashboard', password: pw })
       });
-
-      // 1. 커뮤니티 설정(목표 일수 및 플랫폼) 데이터 불러오기 (날짜 제한 없음)
-      const { data: settingsData } = await supabase
-        .from('attendance_logs')
-        .select('band_id, nickname, created_at')
-        .or('nickname.like.___TARGET:%,nickname.like.___CONFIG:%')
-        .order('created_at', { ascending: true });
-
-      // 2. 이번 달 출석 데이터 불러오기
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      const { data: checkinData, error } = await supabase
-        .from('attendance_logs')
-        .select('*')
-        .gte('created_at', firstDayOfMonth.toISOString())
-        .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error(error);
-        setIsLoading(false);
-        return;
+      const data = await res.json();
+      if (res.ok) {
+        setBands(data.bands || []);
       }
-
-      // 두 데이터 병합
-      const data = [...(settingsData || []), ...(checkinData || [])];
-
-      // 밴드별로 1차 그룹화, 그 안에서 유저별로 2차 그룹화
-      const grouped = data.reduce((acc: any, log: any) => {
-        const band = log.band_id;
-        if (!acc[band]) {
-          acc[band] = { bandId: band, users: {}, totalCheckins: 0, todayCheckins: 0, targetDays: 20, platform: 'band' };
-        }
-        
-        const user = log.nickname;
-        
-        // 목표 일수 및 플랫폼 마커 파싱 (통계 제외)
-        if (user.startsWith('___CONFIG:')) {
-          const parts = user.split(':');
-          if (parts.length >= 3) {
-            acc[band].targetDays = parseInt(parts[1], 10);
-            acc[band].platform = parts[2].replace('___', '');
-          }
-          return acc;
-        } else if (user.startsWith('___TARGET:')) {
-          // 구버전 하위 호환성 (플랫폼 기본값: band)
-          const match = user.match(/___TARGET:(\d+)___/);
-          if (match) {
-            acc[band].targetDays = parseInt(match[1], 10);
-            acc[band].platform = 'band';
-          }
-          return acc; 
-        }
-        
-        acc[band].totalCheckins += 1;
-        
-        // 오늘 출석 인원 계산 (로컬 시간 기준)
-        const logDate = new Date(log.created_at);
-        const logDateStr = `${logDate.getFullYear()}-${logDate.getMonth()}-${logDate.getDate()}`;
-        const todayStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-        
-        if (logDateStr === todayStr) {
-          acc[band].todayCheckins += 1;
-        }
-        
-        if (!acc[band].users[user]) {
-          acc[band].users[user] = { name: user, days: 0, lastCheckIn: log.created_at };
-        }
-        acc[band].users[user].days += 1;
-        
-        // 최신 출석일 업데이트
-        if (new Date(log.created_at) > new Date(acc[band].users[user].lastCheckIn)) {
-          acc[band].users[user].lastCheckIn = log.created_at;
-        }
-        
-        return acc;
-      }, {});
-
-      setBandStats(grouped);
+    } catch (e) {
+      console.error(e);
+    } finally {
       setIsLoading(false);
     }
-
-    fetchAllStats();
-  }, [password]);
-
-  // 개별 밴드 엑셀(CSV) 다운로드 기능
-  const downloadBandCSV = (bandId: string, usersObj: any, targetDays: number = 20) => {
-    // 유저들을 출석일수 내림차순 정렬
-    const users = Object.values(usersObj).sort((a: any, b: any) => b.days - a.days);
-    
-    let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; // 한글 깨짐 방지 BOM
-    csvContent += '순위,닉네임,누적출석일,최근출석시간,상태\n';
-    
-    users.forEach((user: any, index: number) => {
-      const isWinner = user.days >= targetDays;
-      const date = new Date(user.lastCheckIn);
-      const formattedDate = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-      const status = isWinner ? '달성 완료' : `${targetDays - user.days}일 남음`;
-      
-      const row = `${index + 1},${user.name},${user.days}일,${formattedDate},${status}`;
-      csvContent += row + '\n';
-    });
-    
-    // 밴드 이름으로 각각 다운로드
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${bandId}_이번달_출석통계.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  if (authFailed) {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify', password })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setIsAuthenticated(true);
+        fetchBands(password);
+      } else {
+        setErrorMsg(data.error || '인증 실패');
+        setIsLoading(false);
+      }
+    } catch (e) {
+      setErrorMsg('서버 오류');
+      setIsLoading(false);
+    }
+  };
+
+  const handleBan = async (bandId: string) => {
+    if (!confirm('이 방을 영구 차단하시겠습니까? (이벤트 혜택 중단)')) return;
+    
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ban', password, payload: { bandId } })
+      });
+      if (res.ok) {
+        alert('차단되었습니다.');
+        fetchBands(password);
+      } else {
+        alert('차단 실패');
+      }
+    } catch (e) {
+      alert('오류 발생');
+    }
+  };
+
+  const handleReward = async (bandName: string, nickname: string) => {
+    if (!confirm(`'${nickname}'님을 당첨자로 선정하고 전광판에 띄우시겠습니까?`)) return;
+    
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reward', password, payload: { bandName, nickname } })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('전광판에 송출되었습니다!\n\n송출 문구:\n' + data.text);
+      } else {
+        alert('송출 실패');
+      }
+    } catch (e) {
+      alert('오류 발생');
+    }
+  };
+
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full border border-gray-700">
-          <div className="text-5xl mb-4">🛑</div>
-          <h2 className="text-2xl font-bold text-white mb-2">접근 권한이 없습니다</h2>
-          <p className="text-gray-400 text-sm">최고 관리자 전용 마스터 비밀번호가 필요합니다.</p>
-        </div>
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
+        <form onSubmit={handleLogin} className="w-full max-w-md bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700 text-center">
+          <div className="w-16 h-16 bg-red-900/50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/30">
+            <span className="text-3xl">🛡️</span>
+          </div>
+          <h2 className="text-white text-2xl font-black mb-2">총괄 마스터 로그인</h2>
+          <p className="text-slate-400 text-sm mb-8">안전한 데이터 엑세스를 위해 마스터 암호를 입력하세요.</p>
+          
+          <input 
+            type="password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-4 text-white text-center tracking-widest focus:outline-none focus:border-indigo-500 transition-colors mb-4 font-mono"
+            placeholder="마스터 암호"
+          />
+          
+          {errorMsg && <p className="text-red-400 text-sm mb-4 font-bold">{errorMsg}</p>}
+          
+          <button 
+            type="submit" 
+            disabled={isLoading || !password}
+            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 text-white font-bold py-4 rounded-xl transition-colors"
+          >
+            {isLoading ? '인증 중...' : '로그인'}
+          </button>
+        </form>
       </div>
     );
   }
 
-  let bandList = Object.values(bandStats).filter((band: any) => band.bandId !== 'default' && band.bandId !== '청개천');
-  if (activeTab !== 'all') {
-    bandList = bandList.filter((band: any) => band.platform === activeTab);
-  }
-
-  // 플랫폼별 표시 이름 매핑
-  const platformLabels: Record<string, string> = {
-    'band': '🟢 네이버 밴드',
-    'daangn': '🥕 당근마켓',
-    'kakao': '🟡 카카오톡'
-  };
-
   return (
-    <div className="min-h-screen bg-[#111827] text-white p-4 md:p-8 font-sans pb-12">
-      <div className="max-w-5xl mx-auto space-y-6">
-        
-        {/* 상단 헤더 (마스터 전용 다크모드 디자인) */}
-        <header className="bg-gray-800 p-6 md:p-8 rounded-3xl shadow-lg border border-gray-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 flex items-center gap-3">
-              <span>🚀</span> 최고 관리자(Super Admin)
-            </h1>
-            <p className="text-gray-400 mt-3 font-medium text-base md:text-lg">
-              모든 제휴 밴드의 출석 현황을 실시간으로 모니터링합니다.
-            </p>
-          </div>
-          
-          <div className="bg-gray-900 border border-gray-700 p-5 rounded-2xl w-full lg:w-auto shadow-inner flex flex-col sm:flex-row gap-6 items-center">
-            {/* 총 가입 밴드 수 */}
-            <div className="flex flex-col items-center justify-center bg-gray-800 p-4 rounded-xl border border-gray-700 w-full sm:w-auto shrink-0 min-w-[140px]">
-              <span className="text-gray-400 font-bold text-sm mb-1">총 가입 밴드 수</span>
-              <span className="text-3xl font-black text-white">{bandList.length}<span className="text-base font-medium text-gray-500 ml-1">개</span></span>
-            </div>
-            
-            {/* 프로모션 기간 표시 기능 */}
-            <div className="w-full">
-              <p className="text-sm text-gray-400 font-bold mb-2 uppercase tracking-wider">현재 프로모션 시즌 (이번 달)</p>
-              <div className="flex justify-between items-center gap-4 bg-gray-800 p-3 rounded-xl border border-gray-700 overflow-hidden">
-                <p className="text-lg md:text-xl font-bold text-gray-200 whitespace-nowrap">{periodInfo.start} ~ {periodInfo.end}</p>
-                <div className="text-right shrink-0">
-                  <span className="bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg text-base font-black border border-blue-500/30 whitespace-nowrap">
-                    마감 D-{periodInfo.daysLeft}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* 신규 커뮤니티 URL 생성기 */}
-        <div className="bg-gray-800 p-6 md:p-8 rounded-3xl shadow-lg border border-gray-700">
-          <h2 className="text-2xl font-bold text-gray-300 mb-6 flex items-center gap-2">
-            🔗 신규 커뮤니티 제휴 링크 생성기
-          </h2>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <select
-              value={newPlatform}
-              onChange={(e) => setNewPlatform(e.target.value as any)}
-              className="bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer font-bold shrink-0"
-            >
-              <option value="band">🟢 네이버 밴드</option>
-              <option value="daangn">🥕 당근마켓</option>
-              <option value="kakao">🟡 카카오톡</option>
-            </select>
-            <input 
-              type="text" 
-              value={newBandName}
-              onChange={(e) => setNewBandName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleGenerateLink()}
-              placeholder={`제휴할 ${platformLabels[newPlatform]?.split(' ')[1] || '커뮤니티'} 이름 (예: momcafe, soccer-club)`} 
-              className="flex-1 bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-            />
-            <select 
-              value={newTargetDays}
-              onChange={(e) => setNewTargetDays(Number(e.target.value))}
-              className="bg-gray-900 border border-gray-600 rounded-xl px-5 py-4 text-white text-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all cursor-pointer font-bold"
-            >
-              <option value={10}>🎯 10일 출석</option>
-              <option value={15}>🎯 15일 출석</option>
-              <option value={20}>🎯 20일 출석</option>
-              <option value={30}>🎯 30일 출석</option>
-            </select>
-            <button 
-              onClick={handleGenerateLink}
-              className="bg-emerald-500 hover:bg-emerald-400 text-gray-900 font-black px-8 py-4 rounded-xl text-lg transition-colors shrink-0"
-            >
-              링크 자동 생성
-            </button>
-          </div>
-          
-          {generatedLinks && (
-            <div className="mt-6 bg-gray-900 p-6 rounded-2xl border border-emerald-900/50 space-y-5 shadow-inner">
-              <div>
-                <p className="text-emerald-400 font-bold mb-2 text-sm flex items-center gap-2">
-                  ✅ 일반 회원용 출석체크 링크 <span className="text-gray-500 font-normal">(밴드 공지사항 등록용)</span>
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input type="text" readOnly value={generatedLinks.checkIn} className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-gray-300 w-full outline-none" />
-                  <button onClick={() => copyToClipboard(generatedLinks.checkIn, '출석체크 링크가')} className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-bold transition-colors whitespace-nowrap shadow-sm">복사하기</button>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-gray-800">
-                <p className="text-blue-400 font-bold mb-2 text-sm flex items-center gap-2">
-                  👑 밴드장 전용 관리자 링크 <span className="text-gray-500 font-normal">(초기비밀번호: 1234)</span>
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input type="text" readOnly value={generatedLinks.admin} className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-gray-300 w-full outline-none" />
-                  <button onClick={() => copyToClipboard(generatedLinks.admin, '관리자 링크가')} className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-bold transition-colors whitespace-nowrap shadow-sm">복사하기</button>
-                </div>
-              </div>
-            </div>
-          )}
+    <div className="min-h-screen bg-slate-50 font-sans pb-12">
+      <header className="bg-slate-900 text-white shadow-xl px-6 py-6 mb-8 sticky top-0 z-10 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
+            <span>🛡️</span> 총괄 마스터 컨트롤 타워
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">모든 방의 통계 및 이벤트를 통제합니다.</p>
         </div>
+        <button onClick={() => fetchBands(password)} className="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold text-sm border border-slate-700 transition-colors">
+          새로고침
+        </button>
+      </header>
 
-        {/* 밴드 목록 카드형 UI */}
-        <div className="space-y-6 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-2">
-            <h2 className="text-2xl font-bold text-gray-300 flex items-center gap-2">
-              📊 운영 중인 커뮤니티 세부 현황
-            </h2>
-            <div className="flex bg-gray-800 p-1.5 rounded-xl border border-gray-700 w-full md:w-auto overflow-x-auto hide-scrollbar">
-              {['all', 'band', 'daangn', 'kakao'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
-                  className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-colors ${
-                    activeTab === tab 
-                      ? 'bg-emerald-500 text-gray-900 shadow-md' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  {tab === 'all' ? '전체 보기' : platformLabels[tab]}
-                </button>
-              ))}
-            </div>
+      <main className="max-w-7xl mx-auto p-4 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h2 className="text-xl font-black text-slate-800">전체 생성 방 목록 ({bands.length}개)</h2>
           </div>
           
-          {isLoading ? (
-             <div className="bg-gray-800 rounded-3xl p-12 text-center text-gray-500 border border-gray-700 font-bold text-xl">
-               데이터를 분석하는 중입니다...
-             </div>
-          ) : bandList.length === 0 ? (
-             <div className="bg-gray-800 rounded-3xl p-12 text-center text-gray-500 border border-gray-700 font-bold text-xl">
-               이번 달 출석 기록이 아직 없습니다.
-             </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {bandList.map((band: any) => {
-                const uniqueUsers = Object.keys(band.users).length;
-                
-                return (
-                  <div key={band.bandId} className="bg-gray-800 p-6 md:p-8 rounded-3xl border border-gray-700 hover:border-gray-500 transition-colors shadow-lg">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{platformLabels[band.platform]?.split(' ')[0] || '🟢'}</span>
-                          <h3 className="text-3xl font-black text-white">{band.bandId}</h3>
+          <div className="overflow-x-auto">
+            {isLoading ? (
+              <div className="p-10 text-center text-slate-500 font-bold">데이터를 불러오는 중...</div>
+            ) : bands.length === 0 ? (
+              <div className="p-10 text-center text-slate-500">방이 존재하지 않습니다.</div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white text-slate-500 text-sm border-b border-slate-200">
+                    <th className="p-4 font-bold">상태</th>
+                    <th className="p-4 font-bold">모임 이름 (플랫폼)</th>
+                    <th className="p-4 font-bold text-center">참여율</th>
+                    <th className="p-4 font-bold">연락처/카톡ID</th>
+                    <th className="p-4 font-bold">20일 달성자 및 통제</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {bands.map((band, idx) => (
+                    <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${band.banned ? 'bg-red-50/50' : ''}`}>
+                      <td className="p-4">
+                        {band.banned ? (
+                          <span className="bg-red-100 text-red-700 font-bold px-2 py-1 rounded text-xs">차단됨</span>
+                        ) : (
+                          <span className="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded text-xs">정상</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800 text-base">{band.bandName}</div>
+                        <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">{band.platform}</div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex flex-col items-center">
+                          <span className={`text-xl font-black ${band.participationRate < 10 ? 'text-red-500' : 'text-indigo-600'}`}>
+                            {band.participationRate}%
+                          </span>
+                          <span className="text-xs text-slate-500 mt-1">{band.activeMembers}명 / {band.totalMembers}명</span>
                         </div>
-                        <span className="bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-md text-sm font-bold border border-blue-500/20 inline-block w-max mt-1">
-                          시즌 마감 D-{periodInfo.daysLeft} ({periodInfo.end} 까지)
-                        </span>
-                      </div>
-                      <a 
-                        href={`/admin?band=${band.bandId}&pw=1234`}
-                        target="_blank"
-                        className="text-sm font-bold text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-xl transition-colors flex items-center gap-1 shrink-0"
-                      >
-                        밴드장 화면 ↗
-                      </a>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 mb-8 mt-6">
-                      <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800 flex flex-col justify-center items-center text-center">
-                        <p className="text-gray-400 text-sm font-bold mb-2 break-keep">이번달 총참여자</p>
-                        <p className="text-2xl font-black text-white">{uniqueUsers}<span className="text-sm font-medium text-gray-500 ml-1">명</span></p>
-                      </div>
-                      <div className="bg-gray-900 rounded-2xl p-4 border border-emerald-900/50 flex flex-col justify-center items-center text-center shadow-[0_0_15px_rgba(16,185,129,0.1)] relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500/50"></div>
-                        <p className="text-emerald-500/90 text-sm font-black mb-2 break-keep">🔥 오늘 출석자</p>
-                        <p className="text-3xl font-black text-emerald-400">{band.todayCheckins}<span className="text-sm font-medium text-emerald-500/50 ml-1">명</span></p>
-                      </div>
-                      <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800 flex flex-col justify-center items-center text-center">
-                        <p className="text-gray-400 text-sm font-bold mb-2 break-keep">총 출석건수</p>
-                        <p className="text-2xl font-black text-blue-400">{band.totalCheckins}<span className="text-sm font-medium text-gray-500 ml-1">건</span></p>
-                      </div>
-                    </div>
-
-                    <button 
-                      onClick={() => downloadBandCSV(band.bandId, band.users, band.targetDays)}
-                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-900 text-lg font-black py-4 rounded-2xl transition-colors flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                    >
-                      📥 {band.bandId} 명단 개별 추출
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+                      </td>
+                      <td className="p-4 font-medium text-slate-600">
+                        {band.contactInfo}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-2 items-start">
+                          {!band.banned && (
+                            <button onClick={() => handleBan(band.bandId)} className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                              🛑 혜택 중단
+                            </button>
+                          )}
+                          
+                          {band.winners && band.winners.length > 0 ? (
+                            <div className="mt-2 bg-yellow-50 p-3 rounded-xl border border-yellow-200 w-full">
+                              <p className="text-xs font-bold text-yellow-800 mb-2">🎁 당첨자 명단 ({band.winners.length}명)</p>
+                              <div className="flex flex-wrap gap-2">
+                                {band.winners.map((w: any, i: number) => (
+                                  <div key={i} className="flex items-center gap-1">
+                                    <span className="text-sm font-bold text-slate-700 bg-white px-2 py-1 rounded border border-yellow-200">{w.name} ({w.days}일)</span>
+                                    {!band.banned && (
+                                      <button 
+                                        onClick={() => handleReward(band.bandName, w.name)}
+                                        className="bg-indigo-600 text-white hover:bg-indigo-500 px-2 py-1 rounded text-xs font-bold shadow-sm"
+                                      >
+                                        전광판 송출
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-slate-400 mt-2">달성자 없음</div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
-
-      </div>
+      </main>
     </div>
-  );
-}
-
-export default function SuperAdminPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-900 flex items-center justify-center font-bold text-gray-500">Loading...</div>}>
-      <SuperAdminDashboard />
-    </Suspense>
   );
 }

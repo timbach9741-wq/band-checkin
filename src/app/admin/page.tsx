@@ -7,210 +7,210 @@ import { supabase } from '../../lib/supabaseClient';
 function AdminDashboard() {
   const searchParams = useSearchParams();
   const bandId = searchParams.get('band');
-  const password = searchParams.get('pw');
   
+  const [pin, setPin] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [authFailed, setAuthFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  useEffect(() => {
-    // 아주 간단한 비밀번호 인증 (고객님이 지정한 공용 비밀번호 '1234')
-    if (!bandId || password !== '1234') {
-      setAuthFailed(true);
-      setIsLoading(false);
-      return;
-    }
-
-    async function fetchStats() {
-      const now = new Date();
-      // 이번 달 1일 00시 00분부터 월말 자정까지
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-
-      const { data, error } = await supabase
-        .from('attendance_logs')
-        .select('*')
-        .eq('band_id', bandId)
-        .gte('created_at', startOfMonth)
-        .lte('created_at', endOfMonth);
-
-      if (error) {
-        console.error(error);
-        setIsLoading(false);
-        return;
-      }
-
-      // 순수 출석 유저만 필터링 (설정 마커 제외)
-      const validData = data.filter((log: any) => !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___TARGET:'));
-
-      // 닉네임별로 그룹화하여 출석 횟수 계산
-      const userStats = validData.reduce((acc: any, log: any) => {
-        if (!acc[log.nickname]) {
-          acc[log.nickname] = { 
-            name: log.nickname, 
-            days: 0, 
-            lastCheckIn: log.created_at 
-          };
-        }
-        acc[log.nickname].days += 1;
-        
-        // 최신 출석일 업데이트
-        if (new Date(log.created_at) > new Date(acc[log.nickname].lastCheckIn)) {
-          acc[log.nickname].lastCheckIn = log.created_at;
-        }
-        return acc;
-      }, {});
-
-      // 배열로 변환 후 출석일수 랭킹순(내림차순)으로 정렬
-      const sortedStats = Object.values(userStats).sort((a: any, b: any) => b.days - a.days);
-      setStats(sortedStats);
-      setIsLoading(false);
-    }
-
-    fetchStats();
-  }, [bandId, password]);
-
-  // 엑셀(CSV) 다운로드 기능
-  const downloadCSV = () => {
-    if (stats.length === 0) {
-      alert('다운로드할 데이터가 없습니다.');
+  const handleVerifyPin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (pin.length !== 4) {
+      setErrorMsg('4자리 숫자를 입력해주세요.');
       return;
     }
     
-    // CSV 헤더
-    let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; // 한글 깨짐 방지 BOM
-    csvContent += '순위,닉네임,누적출석일,최근출석시간,상태\n';
-    
-    // CSV 데이터
-    stats.forEach((user, index) => {
-      const isWinner = user.days >= 20;
-      const date = new Date(user.lastCheckIn);
-      const formattedDate = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-      const status = isWinner ? '달성 완료' : `${20 - user.days}일 남음`;
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bandId, pin })
+      });
+      const data = await res.json();
       
-      const row = `${index + 1},${user.name},${user.days}일,${formattedDate},${status}`;
-      csvContent += row + '\n';
-    });
-    
-    // 다운로드 트리거
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${bandId}_이번달_출석통계.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      if (res.ok) {
+        setIsAuthenticated(true);
+        fetchStats();
+      } else {
+        setErrorMsg(data.error || '비밀번호가 일치하지 않습니다.');
+        setPin('');
+      }
+    } catch (e) {
+      setErrorMsg('서버 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (authFailed) {
+  const fetchStats = async () => {
+    setIsLoading(true);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    // RLS allows SELECTing non-config rows
+    const { data, error } = await supabase
+      .from('attendance_logs')
+      .select('*')
+      .eq('band_id', bandId)
+      .gte('created_at', startOfMonth);
+
+    if (error) {
+      console.error(error);
+      setIsLoading(false);
+      return;
+    }
+
+    const validData = data.filter((log: any) => !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___MARQUEE:'));
+
+    const userStats = validData.reduce((acc: any, log: any) => {
+      if (!acc[log.nickname]) {
+        acc[log.nickname] = { name: log.nickname, days: 0, lastCheckIn: log.created_at };
+      }
+      acc[log.nickname].days += 1;
+      if (new Date(log.created_at) > new Date(acc[log.nickname].lastCheckIn)) {
+        acc[log.nickname].lastCheckIn = log.created_at;
+      }
+      return acc;
+    }, {});
+
+    const sortedStats = Object.values(userStats).sort((a: any, b: any) => b.days - a.days);
+    setStats(sortedStats);
+    setIsLoading(false);
+  };
+
+  const handleNumberClick = (num: string) => {
+    if (pin.length < 4) {
+      setPin(prev => prev + num);
+      setErrorMsg('');
+    }
+  };
+
+  const handleDelete = () => {
+    setPin(prev => prev.slice(0, -1));
+  };
+
+  // 자동 제출
+  useEffect(() => {
+    if (pin.length === 4 && !isAuthenticated) {
+      handleVerifyPin();
+    }
+  }, [pin]);
+
+  if (!bandId) {
+    return <div className="p-10 text-center text-red-500 font-bold">잘못된 접근입니다. (방 정보가 없습니다.)</div>;
+  }
+
+  // 잠금 화면 UI
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-md text-center max-w-sm w-full">
-          <div className="text-4xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">접근 권한이 없습니다</h2>
-          <p className="text-gray-500 text-sm">올바른 밴드 아이디와 비밀번호가 포함된 링크로 접속해주세요.</p>
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700 text-center">
+          <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <span className="text-3xl">🔒</span>
+          </div>
+          <h2 className="text-white text-xl font-bold mb-2">관리자 암호 입력</h2>
+          <p className="text-slate-400 text-sm mb-8">방 생성 시 설정한 PIN 4자리를 입력하세요.</p>
+          
+          <div className="flex justify-center gap-4 mb-8">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? 'bg-indigo-500' : 'bg-slate-700'}`}></div>
+            ))}
+          </div>
+          
+          {errorMsg && <p className="text-red-400 text-sm mb-4 font-bold animate-pulse">{errorMsg}</p>}
+
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              <button key={num} onClick={() => handleNumberClick(num.toString())} className="h-16 text-2xl font-bold text-white bg-slate-700/50 hover:bg-slate-600 rounded-2xl active:scale-95 transition-all">
+                {num}
+              </button>
+            ))}
+            <button onClick={() => setPin('')} className="h-16 text-sm font-bold text-slate-400 hover:text-white rounded-2xl active:scale-95 transition-all">초기화</button>
+            <button onClick={() => handleNumberClick('0')} className="h-16 text-2xl font-bold text-white bg-slate-700/50 hover:bg-slate-600 rounded-2xl active:scale-95 transition-all">0</button>
+            <button onClick={handleDelete} className="h-16 text-2xl font-bold text-slate-300 hover:text-white rounded-2xl active:scale-95 transition-all">⌫</button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // 관리자 대시보드 UI (인증 성공)
   return (
-    <div className="min-h-screen bg-[#f2f4f7] p-4 md:p-8 font-sans pb-12">
-      <div className="max-w-4xl mx-auto space-y-6">
-        
-        {/* 상단 헤더 */}
-        <header className="bg-white p-6 md:p-8 rounded-3xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center border border-gray-200">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-2">
-              <span>👑</span> 밴드 관리자 대시보드
-            </h1>
-            <p className="text-gray-500 mt-2 font-medium text-lg">
-              현재 밴드: <span className="text-[#03c75a] font-black bg-[#e8f9ec] px-3 py-1 rounded-lg ml-1">{bandId}</span>
-            </p>
-          </div>
-          <button 
-            onClick={downloadCSV}
-            className="mt-4 md:mt-0 bg-[#03c75a] hover:bg-[#02b350] active:scale-95 transition-all text-white px-5 py-3 rounded-2xl font-bold shadow-md flex items-center gap-2 cursor-pointer"
-          >
-            📥 엑셀(CSV) 다운로드
-          </button>
-        </header>
+    <div className="min-h-screen bg-slate-50 font-sans pb-12">
+      <header className="bg-white shadow-sm border-b border-slate-200 px-4 py-5 mb-8 sticky top-0 z-10 flex justify-between items-center">
+        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">👑 내 방 통계 대시보드</h1>
+      </header>
 
-        {/* 랭킹 표 */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/50">
-            <h2 className="text-2xl font-extrabold text-gray-800">{new Date().getMonth() + 1}월 출석 우수자 랭킹 🏆</h2>
-            <p className="text-base text-gray-500 mt-2 font-medium">20일 이상 출석자는 커피 쿠폰 대상자로 자동 분류됩니다.</p>
+      <main className="max-w-4xl mx-auto p-4 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-sm font-bold text-slate-500 mb-1">현재 출석 인원</h3>
+            <p className="text-3xl font-black text-slate-800">{stats.length}명</p>
+          </div>
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-md text-white">
+            <h3 className="text-sm font-bold text-indigo-100 mb-1">응모 달성자 (20일 이상)</h3>
+            <p className="text-3xl font-black">{stats.filter(s => s.days >= 20).length}명</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-slate-800">이번 달 출석 랭킹</h2>
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="bg-white text-gray-400 text-sm border-b-2 border-gray-100">
-                  <th className="p-5 font-bold text-center w-20">순위</th>
-                  <th className="p-5 font-bold text-lg">회원 닉네임</th>
-                  <th className="p-5 font-bold text-center w-32">누적 출석일</th>
-                  <th className="p-5 font-bold text-center w-40">최근 출석 시간</th>
-                  <th className="p-5 font-bold text-center w-40">미션 상태</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-12 text-center text-gray-400 font-bold text-lg">데이터를 불러오는 중입니다...</td>
+            {isLoading ? (
+              <div className="p-10 text-center text-slate-500">데이터를 불러오는 중...</div>
+            ) : stats.length === 0 ? (
+              <div className="p-10 text-center text-slate-500">아직 출석 기록이 없습니다.</div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
+                    <th className="p-4 font-bold">순위</th>
+                    <th className="p-4 font-bold">닉네임</th>
+                    <th className="p-4 font-bold">누적 출석</th>
+                    <th className="p-4 font-bold">상태</th>
                   </tr>
-                ) : stats.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-12 text-center text-gray-400 font-bold text-lg">이번 달 출석 기록이 없습니다.</td>
-                  </tr>
-                ) : (
-                  stats.map((user, index) => {
+                </thead>
+                <tbody>
+                  {stats.map((user, idx) => {
                     const isWinner = user.days >= 20;
-                    const date = new Date(user.lastCheckIn);
-                    const formattedDate = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                    
                     return (
-                      <tr key={user.name} className="hover:bg-gray-50 transition-colors">
-                        <td className="p-5 text-center">
-                          <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full font-black text-lg ${index < 3 ? 'bg-[#03c75a] text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}>
-                            {index + 1}
-                          </span>
+                      <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="p-4 text-slate-500 font-bold">{idx + 1}</td>
+                        <td className="p-4 font-bold text-slate-800 text-lg flex items-center gap-2">
+                          {user.name}
+                          {isWinner && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded border border-yellow-200">응모달성</span>}
                         </td>
-                        <td className="p-5 font-black text-gray-800 text-xl">{user.name}</td>
-                        <td className="p-5 text-center">
-                          <span className={`text-2xl font-black ${isWinner ? 'text-[#03c75a]' : 'text-gray-700'}`}>
-                            {user.days}<span className="text-sm font-medium text-gray-400 ml-1">일</span>
-                          </span>
-                        </td>
-                        <td className="p-5 text-center text-gray-400 text-base font-bold">{formattedDate}</td>
-                        <td className="p-5 text-center">
+                        <td className="p-4 font-black text-indigo-600">{user.days}일</td>
+                        <td className="p-4">
                           {isWinner ? (
-                            <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-black border border-yellow-200 shadow-sm inline-block w-full">
-                              🎉 달성 완료
-                            </span>
+                            <span className="text-green-600 font-bold text-sm">완료</span>
                           ) : (
-                            <span className="bg-gray-100 text-gray-500 px-4 py-2 rounded-full text-sm font-bold inline-block w-full">
-                              {20 - user.days}일 남음
-                            </span>
+                            <span className="text-slate-400 font-medium text-sm">{20 - user.days}일 남음</span>
                           )}
                         </td>
                       </tr>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
-
-      </div>
+      </main>
     </div>
   );
 }
 
 export default function AdminPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-xl font-bold">Loading...</div>}>
       <AdminDashboard />
     </Suspense>
   );

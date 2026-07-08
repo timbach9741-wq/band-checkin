@@ -15,6 +15,9 @@ function CheckInContent() {
   const [streakDays, setStreakDays] = useState(1);
   const [targetDays, setTargetDays] = useState(20);
   const [platform, setPlatform] = useState<'band'|'daangn'|'kakao'>('band');
+  const [globalMarquee, setGlobalMarquee] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isBanned, setIsBanned] = useState(false);
 
   // DB 연동된 실제 출석자 데이터 상태
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -169,54 +172,59 @@ function CheckInContent() {
     }, 100);
   };
 
-  // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 DB에서 불러옵니다.
+  // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 불러옵니다.
   useEffect(() => {
     async function fetchTodayAttendees() {
-      // 1. 목표 일수 및 플랫폼 설정 불러오기
-      const { data: settingData } = await supabase
-        .from('attendance_logs')
-        .select('nickname')
-        .eq('band_id', bandId)
-        .or('nickname.like.___TARGET:%,nickname.like.___CONFIG:%')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (settingData && settingData.length > 0) {
-        const marker = settingData[0].nickname;
-        if (marker.startsWith('___CONFIG:')) {
-          const parts = marker.split(':');
-          if (parts.length >= 3) {
-            setTargetDays(20); // 모든 방 강제 20일 세팅
-            setPlatform(parts[2] as 'band'|'daangn'|'kakao');
+      // 1. 목표 일수 및 플랫폼 설정, 글로벌 전광판 불러오기 (API)
+      try {
+        const res = await fetch(`/api/get-band?band=${bandId}`);
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.error === 'BANNED') setIsBanned(true);
+        } else {
+          if (data.config) {
+            setTargetDays(data.config.targetDays || 20);
+            setPlatform(data.config.platform || 'band');
           }
-        } else if (marker.startsWith('___TARGET:')) {
-          const match = marker.match(/___TARGET:(\d+)___/);
-          if (match) {
-            setTargetDays(20); // 모든 방 강제 20일 세팅
-            setPlatform('band');
-          }
+          if (data.globalMarquee) setGlobalMarquee(data.globalMarquee);
         }
+      } catch (e) {
+        console.error('Failed to fetch band info', e);
       }
 
-      // 2. 오늘 출석 멤버 불러오기
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // 오늘 자정 기준
-      
+      // 2. 이달의 출석 데이터 불러오기 (오늘 출석자 및 연속 출석 계산용)
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
       const { data, error } = await supabase
         .from('attendance_logs')
         .select('*')
         .eq('band_id', bandId)
-        .gte('created_at', today.toISOString())
-        .order('created_at', { ascending: false }); // 최신순 정렬
+        .gte('created_at', startOfMonth);
         
       if (data) {
-        // 통계/설정용 마커(___TARGET:, ___CONFIG:) 제외하고 리스트업
-        const formatted = data.filter((log: any) => !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___CONFIG:')).map((log: any) => {
+        // 필터링: 환경설정 및 마커 제외
+        const validLogs = data.filter((log: any) => !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___MARQUEE:'));
+        
+        // 닉네임별 이번 달 총 출석 횟수 계산
+        const streakMap = new Map<string, number>();
+        validLogs.forEach((log: any) => {
+          streakMap.set(log.nickname, (streakMap.get(log.nickname) || 0) + 1);
+        });
+
+        // 오늘 출석자만 필터링 후 정렬
+        const todayLogs = validLogs.filter((log: any) => new Date(log.created_at).getTime() >= todayStart.getTime());
+        todayLogs.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        const formatted = todayLogs.map((log: any) => {
           const date = new Date(log.created_at);
           return {
             id: log.id,
             name: log.nickname,
-            time: `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+            time: `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`,
+            streak: streakMap.get(log.nickname) || 1
           };
         });
         setAttendees(formatted);
@@ -234,45 +242,70 @@ function CheckInContent() {
     // 1. 화이트햇 방식: 쿠팡 새 창 띄우기
     window.open(COUPANG_URL, '_blank');
 
-    // 2. Supabase DB에 출석 기록 저장
-    const { error: insertError } = await supabase
-      .from('attendance_logs')
-      .insert([{ band_id: bandId, nickname: nickname }]);
-
-    if (insertError) {
-      console.error('출석 저장 실패:', insertError);
-      alert('출석 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // 3. 이번 달 누적 출석 일수 계산
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    
-    const { count } = await supabase
-      .from('attendance_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('band_id', bandId)
-      .eq('nickname', nickname)
-      .gte('created_at', startOfMonth);
+    // 2. API 서버를 통해 출석 및 방어 로직 수행
+    try {
+      const res = await fetch('/api/check-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bandId, nickname })
+      });
+      const data = await res.json();
       
-    setStreakDays(count || 1);
+      if (!res.ok) throw new Error(data.error);
 
-    // 4. 화면 리스트 맨 위에 즉시 추가 (피드백용)
-    const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    setAttendees(prev => [{ id: Date.now(), name: nickname, time: timeString }, ...prev]);
-    
-    setIsSubmitting(false);
-    setHasCheckedIn(true);
-    setNickname(''); 
+      setStreakDays(data.totalDays);
+      if (data.isWinner) {
+        setShowConfetti(true);
+      }
+      
+      const timeString = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+      setAttendees(prev => [{ id: Date.now(), name: nickname, time: timeString, streak: data.totalDays }, ...prev]);
+      
+      setIsSubmitting(false);
+      setHasCheckedIn(true);
+    } catch (err: any) {
+      alert(err.message);
+      setIsSubmitting(false);
+    }
   };
+
+  if (isBanned) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-900 via-rose-900 to-slate-900 font-sans pb-12 text-white flex flex-col items-center justify-center p-6 text-center">
+        <span className="text-6xl mb-6">🛑</span>
+        <h1 className="text-3xl font-black text-red-200 mb-4">참여율 저조로 이벤트가 중단되었습니다.</h1>
+        <p className="text-lg text-rose-200/70 bg-black/20 p-4 rounded-2xl border border-red-500/30">해당 모임은 참여율 미달 등의 사유로 제휴 이벤트 혜택이 영구 중단되었습니다.<br/>자세한 사항은 방장에게 문의하세요.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 font-sans pb-12 text-white selection:bg-pink-500 selection:text-white">
+      {/* 20일 달성 폭죽 효과 */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-500">
+          <div className="text-center animate-bounce">
+            <div className="text-8xl mb-4">🎉</div>
+            <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-400 drop-shadow-lg">이벤트 자동 응모 완료!</h2>
+            <p className="text-white mt-4 font-bold text-xl">20일 출석 달성을 축하합니다!</p>
+            <button onClick={() => setShowConfetti(false)} className="mt-8 pointer-events-auto bg-pink-500 hover:bg-pink-400 text-white px-8 py-3 rounded-full font-black border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.5)]">닫기</button>
+          </div>
+        </div>
+      )}
+
       {/* 상단 밴드 스타일 헤더 (글래스모피즘) */}
-      <header className="bg-white/10 backdrop-blur-md shadow-lg px-4 py-4 md:py-6 sticky top-0 z-10 flex items-center justify-center border-b border-white/20">
+      <header className="bg-white/10 backdrop-blur-md shadow-lg px-4 py-4 md:py-6 sticky top-0 z-10 flex flex-col items-center justify-center border-b border-white/20">
         <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300 tracking-tight drop-shadow-sm">✨ {bandTitle}</h1>
+        {/* 글로벌 전광판 */}
+        {globalMarquee && (
+          <div className="w-full max-w-2xl mt-3 overflow-hidden bg-black/30 border border-yellow-500/30 rounded-full">
+            <div className="whitespace-nowrap px-4 py-1.5 text-yellow-300 font-bold text-sm flex items-center">
+              <span className="mr-2">🏆</span>
+              {/* @ts-ignore */}
+              <marquee scrollamount="5">{globalMarquee}</marquee>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="max-w-lg md:max-w-2xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8 mt-4 md:mt-8">
@@ -457,7 +490,15 @@ function CheckInContent() {
                       {user.name.charAt(0)}
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-bold text-white text-lg md:text-xl tracking-wide">{user.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-lg md:text-xl tracking-wide">{user.name}</span>
+                        {user.streak >= 20 && (
+                          <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 text-[10px] md:text-xs font-black px-2 py-0.5 rounded shadow-sm border border-yellow-300/50 flex items-center gap-1 animate-pulse">
+                            👑 응모완료
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-purple-300/80 font-medium">{user.streak}일 누적 출석</span>
                     </div>
                   </div>
                   <span className="text-sm md:text-base text-purple-300 font-bold bg-black/20 px-3 py-1 rounded-lg">{user.time}</span>

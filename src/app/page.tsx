@@ -7,6 +7,10 @@ export default function Home() {
   const [newPlatform, setNewPlatform] = useState<'band' | 'daangn' | 'kakao' | 'personal'>('band');
   const [newBandName, setNewBandName] = useState('');
   const [newTargetDays, setNewTargetDays] = useState<number>(20);
+  const [totalMembers, setTotalMembers] = useState('');
+  const [contactInfo, setContactInfo] = useState('');
+  const [pin, setPin] = useState('');
+  
   const [generatedLinks, setGeneratedLinks] = useState<{checkIn: string, admin: string} | null>(null);
   const [origin, setOrigin] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -25,6 +29,21 @@ export default function Home() {
       return;
     }
 
+    if (!totalMembers || isNaN(Number(totalMembers)) || Number(totalMembers) <= 0) {
+      alert('올바른 총 인원수를 입력해주세요!');
+      return;
+    }
+
+    if (!contactInfo.trim()) {
+      alert('쿠폰 수령처(연락처 또는 카카오톡 아이디)를 입력해주세요!');
+      return;
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      alert('관리자 비밀번호는 4자리 숫자로 설정해주세요!');
+      return;
+    }
+
     const isValid = /^[a-zA-Z0-9가-힣_-\s]+$/.test(newBandName.trim());
     if (!isValid) {
       alert('이름은 한글, 영문, 숫자, 띄어쓰기, 하이픈(-)만 사용할 수 있습니다. 특수문자는 빼주세요!');
@@ -34,23 +53,32 @@ export default function Home() {
     setIsGenerating(true);
     
     try {
-      const safeName = newBandName.trim().replace(/\s+/g, '-').toLowerCase();
-      // 이름 중복 방지를 위한 랜덤 고유 코드 4자리 추가 (예: 데일리-a1b2)
-      const uniqueId = `${safeName}-${Math.random().toString(36).substring(2, 6)}`;
-      
-      const { error } = await supabase.from('attendance_logs').insert([
-        { band_id: uniqueId, nickname: `___CONFIG:${newTargetDays}:${newPlatform}___` }
-      ]);
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bandName: newBandName.trim(),
+          platform: newPlatform,
+          targetDays: newTargetDays,
+          totalMembers: Number(totalMembers),
+          contactInfo: contactInfo.trim(),
+          pin: pin
+        })
+      });
 
-      if (error) throw error;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || '링크 생성 중 오류가 발생했습니다.');
+      }
       
       setGeneratedLinks({
-        checkIn: `${origin}/check-in?band=${uniqueId}`,
-        admin: `${origin}/admin?band=${uniqueId}&pw=1234`
+        checkIn: `${origin}/check-in?band=${data.bandId}`,
+        admin: `${origin}/admin?band=${data.bandId}`
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('링크 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      alert(err.message || '링크 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsGenerating(false);
     }
@@ -160,10 +188,63 @@ export default function Home() {
                 />
               </div>
 
-              {/* Step 3: 목표 일수 */}
-              <div className="space-y-3">
+              {/* Step 3: 방 정보 입력 */}
+              <div className="space-y-4 border-t border-slate-100 pt-6 mt-2">
+                {/* 총 인원수 */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                    <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
+                    이 방의 총 인원수는 몇 명인가요?
+                  </label>
+                  <input 
+                    type="number" 
+                    value={totalMembers}
+                    onChange={(e) => setTotalMembers(e.target.value)}
+                    placeholder="예: 50" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
+                  />
+                </div>
+
+                {/* 연락처 */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                    <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
+                    쿠폰을 수령할 연락처 또는 카톡ID
+                  </label>
+                  <input 
+                    type="text" 
+                    value={contactInfo}
+                    onChange={(e) => setContactInfo(e.target.value)}
+                    placeholder="예: 홍길동 / 010-1234-5678" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
+                  />
+                  <p className="text-xs text-slate-500 ml-2 font-medium">※ 우수 달성자 혜택 전송 시에만 사용되며 암호화 보관됩니다.</p>
+                </div>
+
+                {/* PIN 번호 */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                    <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">5</span> 
+                    관리자용 비밀번호 (PIN) 설정
+                  </label>
+                  <input 
+                    type="password" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                    placeholder="숫자 4자리 입력" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400 tracking-[0.5em]"
+                  />
+                  <p className="text-xs text-slate-500 ml-2 font-medium">※ 통계 열람 시 사용할 4자리 숫자입니다.</p>
+                </div>
+              </div>
+
+              {/* Step 6: 목표 일수 */}
+              <div className="space-y-3 pt-6 border-t border-slate-100 mt-2">
                 <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
-                  <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
+                  <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">6</span> 
                   경품 응모 목표 일수 (자동 세팅)
                 </label>
                 <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-lg font-bold flex items-center gap-2">
