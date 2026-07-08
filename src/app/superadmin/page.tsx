@@ -16,10 +16,10 @@ export default function SuperadminPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
 
   const PLATFORMS = [
-    { id: 'band', label: '네이버밴드' },
-    { id: 'daangn', label: '당근' },
-    { id: 'kakao', label: '카카오톡' },
-    { id: 'somoim', label: '소모임' }
+    { id: 'band', label: '네이버밴드', active: 'bg-[#00C73C] text-white border-[#00C73C]', inactive: 'text-[#00C73C] bg-white border-slate-200 hover:bg-[#00C73C]/10 hover:border-[#00C73C]' },
+    { id: 'daangn', label: '당근', active: 'bg-[#FF7E36] text-white border-[#FF7E36]', inactive: 'text-[#FF7E36] bg-white border-slate-200 hover:bg-[#FF7E36]/10 hover:border-[#FF7E36]' },
+    { id: 'kakao', label: '카카오톡', active: 'bg-[#FEE500] text-[#371D1E] border-[#FEE500]', inactive: 'text-[#371D1E] bg-white border-slate-200 hover:bg-[#FEE500]/20 hover:border-[#FEE500]' },
+    { id: 'somoim', label: '소모임', active: 'bg-[#FD4636] text-white border-[#FD4636]', inactive: 'text-[#FD4636] bg-white border-slate-200 hover:bg-[#FD4636]/10 hover:border-[#FD4636]' }
   ];
 
   const getPlatformName = (platform: string) => {
@@ -29,6 +29,15 @@ export default function SuperadminPage() {
     if (p.includes('daangn')) return '당근';
     if (p.includes('somoim')) return '소모임';
     return p.toUpperCase();
+  };
+
+  const getPlatformStyle = (platform: string) => {
+    const p = platform?.toLowerCase() || '';
+    if (p.includes('band')) return 'bg-[#00C73C]/10 text-[#00C73C] border border-[#00C73C]/20';
+    if (p.includes('kakao')) return 'bg-[#FEE500]/30 text-[#371D1E] border border-[#FEE500]/50';
+    if (p.includes('daangn')) return 'bg-[#FF7E36]/10 text-[#FF7E36] border border-[#FF7E36]/20';
+    if (p.includes('somoim')) return 'bg-[#FD4636]/10 text-[#FD4636] border border-[#FD4636]/20';
+    return 'bg-slate-100 text-slate-500 border border-slate-200';
   };
 
   const fetchBands = async (pw: string, offset: number = 0) => {
@@ -247,10 +256,10 @@ export default function SuperadminPage() {
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             <button
               onClick={() => setSelectedPlatform(null)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
                 selectedPlatform === null
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                  : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
               }`}
             >
               전체보기
@@ -259,10 +268,10 @@ export default function SuperadminPage() {
               <button
                 key={plat.id}
                 onClick={() => setSelectedPlatform(selectedPlatform === plat.id ? null : plat.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
                   selectedPlatform === plat.id
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300'
+                    ? `${plat.active} shadow-md`
+                    : plat.inactive
                 }`}
               >
                 {plat.label}
@@ -303,7 +312,7 @@ export default function SuperadminPage() {
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-slate-800 text-base flex items-center gap-2">
                           {band.bandName}
-                          <span className="text-[10px] text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">{getPlatformName(band.platform)}</span>
+                          <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${getPlatformStyle(band.platform)}`}>{getPlatformName(band.platform)}</span>
                         </div>
                         <div className="text-xs text-slate-400 mt-0.5">{band.contactInfo}</div>
                       </div>
