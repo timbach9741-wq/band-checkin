@@ -15,6 +15,15 @@ export default function SuperadminPage() {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
 
+  const getPlatformName = (platform: string) => {
+    const p = platform?.toLowerCase() || '';
+    if (p.includes('band')) return '네이버밴드';
+    if (p.includes('kakao')) return '카카오톡';
+    if (p.includes('daangn')) return '당근';
+    if (p.includes('somoim')) return '소모임';
+    return p.toUpperCase();
+  };
+
   const fetchBands = async (pw: string, offset: number = 0) => {
     setIsLoading(true);
     try {
@@ -250,9 +259,6 @@ export default function SuperadminPage() {
                 }`}
               >
                 {band.bandName}
-                <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
-                  selectedBandId === band.bandId ? 'bg-indigo-500 text-indigo-100' : 'bg-slate-100 text-slate-400'
-                }`}>{band.platform?.toUpperCase()}</span>
               </button>
             ))}
           </div>
@@ -290,7 +296,7 @@ export default function SuperadminPage() {
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-slate-800 text-base flex items-center gap-2">
                           {band.bandName}
-                          <span className="text-[10px] text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">{band.platform}</span>
+                          <span className="text-[10px] text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded">{getPlatformName(band.platform)}</span>
                         </div>
                         <div className="text-xs text-slate-400 mt-0.5">{band.contactInfo}</div>
                       </div>
