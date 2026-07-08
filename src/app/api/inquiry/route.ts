@@ -55,6 +55,28 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
+    // 5. Send Telegram Notification
+    try {
+      const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8803944886:AAGkte1GvodpK8Zk3EEiJsn5jZfmomgLiG8';
+      const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '5324471356';
+      
+      const message = `🚨 새로운 문의가 접수되었습니다!\n\n▪️ 유형: ${inquiryPayload.type}\n▪️ 방 이름(성함): ${inquiryPayload.bandName}\n▪️ 연락처: ${inquiryPayload.contact}\n\n👉 관리자 대시보드에서 확인 및 삭제 처리해주세요.`;
+      
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+        }),
+      });
+    } catch (telegramErr) {
+      console.error('Telegram notification failed:', telegramErr);
+      // We don't throw here because the DB save was successful, we still want to return success to the user
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error saving inquiry:', error);
