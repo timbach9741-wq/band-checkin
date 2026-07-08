@@ -14,6 +14,7 @@ export default function Home() {
   const [generatedLinks, setGeneratedLinks] = useState<{checkIn: string, admin: string} | null>(null);
   const [origin, setOrigin] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -110,17 +111,21 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           {/* 직관적인 문의하기 드롭다운 */}
-          <div className="relative group">
-            <button className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1 py-2">
+          <div className="relative">
+            <button 
+              onClick={() => setIsSupportOpen(!isSupportOpen)}
+              onBlur={() => setTimeout(() => setIsSupportOpen(false), 200)}
+              className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1 py-2"
+            >
               <span className="text-base">✈️</span> 링크 / 암호 찾기 ▾
             </button>
-            <div className="absolute right-0 top-full w-72 bg-white border border-slate-200 shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col gap-1 z-50">
+            <div className={`absolute right-0 top-full w-72 bg-white border border-slate-200 shadow-xl rounded-xl p-2 transition-all flex flex-col gap-1 z-50 origin-top-right ${isSupportOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
               <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-100 mb-1">어떤 문제가 있으신가요? (텔레그램 연결)</div>
               <a 
                 href="https://t.me/YOUR_TELEGRAM_LINK" 
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
                 className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
               >
                 🤔 관리자 비밀번호를 잊어버리셨나요?
@@ -129,7 +134,7 @@ export default function Home() {
                 href="https://t.me/YOUR_TELEGRAM_LINK" 
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
                 className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
               >
                 🤔 관리자 접속 링크를 잊어버리셨나요?
@@ -138,7 +143,7 @@ export default function Home() {
                 href="https://t.me/YOUR_TELEGRAM_LINK" 
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={(e) => { e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
+                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
                 className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
               >
                 🤔 회원용 출석체크 링크를 분실하셨나요?
