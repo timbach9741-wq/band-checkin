@@ -19,7 +19,7 @@ export default function SuperadminPage() {
     { id: 'band', label: '네이버밴드', active: 'bg-[#00C73C] text-white border-[#00C73C]', inactive: 'text-[#00C73C] bg-white border-slate-200 hover:bg-[#00C73C]/10 hover:border-[#00C73C]' },
     { id: 'daangn', label: '당근', active: 'bg-[#FF7E36] text-white border-[#FF7E36]', inactive: 'text-[#FF7E36] bg-white border-slate-200 hover:bg-[#FF7E36]/10 hover:border-[#FF7E36]' },
     { id: 'kakao', label: '카카오톡', active: 'bg-[#FEE500] text-[#371D1E] border-[#FEE500]', inactive: 'text-[#371D1E] bg-white border-slate-200 hover:bg-[#FEE500]/20 hover:border-[#FEE500]' },
-    { id: 'somoim', label: '소모임', active: 'bg-[#FD4636] text-white border-[#FD4636]', inactive: 'text-[#FD4636] bg-white border-slate-200 hover:bg-[#FD4636]/10 hover:border-[#FD4636]' }
+    { id: 'personal', label: '소모임/개인', active: 'bg-[#FD4636] text-white border-[#FD4636]', inactive: 'text-[#FD4636] bg-white border-slate-200 hover:bg-[#FD4636]/10 hover:border-[#FD4636]' }
   ];
 
   const getPlatformName = (platform: string) => {
@@ -27,7 +27,7 @@ export default function SuperadminPage() {
     if (p.includes('band')) return '네이버밴드';
     if (p.includes('kakao')) return '카카오톡';
     if (p.includes('daangn')) return '당근';
-    if (p.includes('somoim')) return '소모임';
+    if (p.includes('somoim') || p.includes('personal')) return '소모임/개인';
     return p.toUpperCase();
   };
 
@@ -36,7 +36,7 @@ export default function SuperadminPage() {
     if (p.includes('band')) return 'bg-[#00C73C]/10 text-[#00C73C] border border-[#00C73C]/20';
     if (p.includes('kakao')) return 'bg-[#FEE500]/30 text-[#371D1E] border border-[#FEE500]/50';
     if (p.includes('daangn')) return 'bg-[#FF7E36]/10 text-[#FF7E36] border border-[#FF7E36]/20';
-    if (p.includes('somoim')) return 'bg-[#FD4636]/10 text-[#FD4636] border border-[#FD4636]/20';
+    if (p.includes('somoim') || p.includes('personal')) return 'bg-[#FD4636]/10 text-[#FD4636] border border-[#FD4636]/20';
     return 'bg-slate-100 text-slate-500 border border-slate-200';
   };
 
@@ -156,7 +156,18 @@ export default function SuperadminPage() {
   const filteredBands = bands.filter(b => {
     const matchesSearch = b.bandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.platform?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPlatform = selectedPlatform ? b.platform?.toLowerCase() === selectedPlatform : true;
+    
+    // Check platform match (handling both 'personal' and 'somoim' for the same tab)
+    let matchesPlatform = true;
+    if (selectedPlatform) {
+      const p = b.platform?.toLowerCase() || '';
+      if (selectedPlatform === 'personal') {
+        matchesPlatform = p.includes('personal') || p.includes('somoim');
+      } else {
+        matchesPlatform = p === selectedPlatform;
+      }
+    }
+    
     return matchesSearch && matchesPlatform;
   });
 
