@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       if (now > limitRecord.resetTime) {
         rateLimitMap.set(ip, { count: 1, resetTime: now + 86400000 });
       } else {
-        if (limitRecord.count >= 10) {
+        if (limitRecord.count >= 5) {
           return NextResponse.json({ error: '하루 최대 문의 횟수를 초과했습니다.' }, { status: 429 });
         }
         limitRecord.count += 1;
@@ -30,11 +30,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '필수 항목이 누락되었습니다.' }, { status: 400 });
     }
 
+    if (bandName.length > 50 || contact.length > 50 || type.length > 50) {
+      return NextResponse.json({ error: '입력값이 너무 깁니다. (최대 50자)' }, { status: 400 });
+    }
+
+    // Basic sanitization to prevent XSS in DB
+    const sanitize = (str: string) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
     // 3. Create config payload
     const inquiryPayload = {
-      type,
-      bandName: bandName.trim(),
-      contact: contact.trim(),
+      type: sanitize(type),
+      bandName: sanitize(bandName.trim()),
+      contact: sanitize(contact.trim()),
       timestamp: new Date().toISOString(),
       resolved: false // Superadmin can mark this as true later if we add that feature
     };
