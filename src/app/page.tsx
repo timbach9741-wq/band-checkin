@@ -174,14 +174,29 @@ export default function Home() {
                   <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> 
                   모임(목표) 이름을 적어주세요
                 </label>
-                <input 
-                  type="text" 
-                  value={newBandName}
-                  onChange={(e) => setNewBandName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateLink()}
-                  placeholder="예: 김가네 가족방, 미라클모닝 스터디, 나홀로 다이어트" 
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-lg focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
-                />
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={newBandName}
+                    onChange={(e) => setNewBandName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleGenerateLink()}
+                    placeholder="예: 김가네 가족방, 미라클모닝 스터디, 나홀로 다이어트" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-lg focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
+                  />
+                  {/* 이모티콘 퀵 입력 버튼 */}
+                  <div className="mt-3 flex flex-wrap gap-2 px-1">
+                    {['♥️', '🔥', '✨', '🏆', '💪', '🍀', '📢', '✅', '⭐', '🌈', '🏃', '💰', '🎯', '~', ',', '&'].map(char => (
+                      <button 
+                        key={char} 
+                        onClick={() => setNewBandName(prev => prev + char)}
+                        className="bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700 w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow-sm transition-all active:scale-95"
+                        title={`${char} 추가`}
+                      >
+                        {char}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Step 3: 방 정보 입력 */}
