@@ -13,6 +13,7 @@ export default function SuperadminPage() {
   const [expandedBand, setExpandedBand] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [monthOffset, setMonthOffset] = useState(0);
+  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
 
   const fetchBands = async (pw: string, offset: number = 0) => {
     setIsLoading(true);
@@ -127,10 +128,12 @@ export default function SuperadminPage() {
     document.body.removeChild(link);
   };
 
-  const filteredBands = bands.filter(b => 
-    b.bandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.platform?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredBands = bands.filter(b => {
+    const matchesSearch = b.bandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.platform?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesBand = selectedBandId ? b.bandId === selectedBandId : true;
+    return matchesSearch && matchesBand;
+  });
 
   const getMonthLabel = (offset: number) => {
     const d = new Date();
@@ -222,6 +225,38 @@ export default function SuperadminPage() {
               className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:border-indigo-400 transition-colors" />
           </div>
         </div>
+
+        {/* 밴드별 필터 탭 */}
+        {bands.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              onClick={() => setSelectedBandId(null)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                selectedBandId === null
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              전체보기
+            </button>
+            {bands.map((band) => (
+              <button
+                key={band.bandId}
+                onClick={() => setSelectedBandId(selectedBandId === band.bandId ? null : band.bandId)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  selectedBandId === band.bandId
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300'
+                }`}
+              >
+                {band.bandName}
+                <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                  selectedBandId === band.bandId ? 'bg-indigo-500 text-indigo-100' : 'bg-slate-100 text-slate-400'
+                }`}>{band.platform?.toUpperCase()}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* 방 목록 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
