@@ -220,16 +220,16 @@ export default function Home() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
                     <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
-                    쿠폰을 수령할 연락처 또는 카톡ID
+                    쿠폰 수령자(방장) 이름 및 연락처(또는 카톡ID)
                   </label>
                   <input 
                     type="text" 
                     value={contactInfo}
                     onChange={(e) => setContactInfo(e.target.value)}
-                    placeholder="예: 홍길동 / 010-1234-5678" 
+                    placeholder="예: 홍길동 / 010-1234-5678 (또는 카톡ID)" 
                     className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
                   />
-                  <p className="text-xs text-slate-500 ml-2 font-medium">※ 우수 달성자 혜택 전송 시에만 사용되며 암호화 보관됩니다.</p>
+                  <p className="text-xs text-slate-500 ml-2 font-medium">※ 우수 달성자 혜택 전송 시 본인 확인용으로 사용되며 안전하게 암호화됩니다.</p>
                 </div>
 
                 {/* PIN 번호 */}
