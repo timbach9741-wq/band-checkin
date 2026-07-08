@@ -48,6 +48,35 @@ export async function POST(req: Request) {
       }
     }
 
+    if (action === 'unban') {
+      const { bandId } = payload;
+      
+      const { data: configData } = await supabaseAdmin
+        .from('attendance_logs')
+        .select('*')
+        .eq('band_id', bandId)
+        .like('nickname', '___CONFIG_%')
+        .single();
+
+      if (!configData) return NextResponse.json({ error: '방을 찾을 수 없습니다.' }, { status: 404 });
+
+      if (configData.nickname.startsWith('___CONFIG_V2:')) {
+        const jsonStr = configData.nickname.replace('___CONFIG_V2:', '').replace('___', '');
+        let fullConfig = JSON.parse(jsonStr);
+        delete fullConfig.banned;
+        
+        const newNickname = `___CONFIG_V2:${JSON.stringify(fullConfig)}___`;
+        
+        await supabaseAdmin
+          .from('attendance_logs')
+          .update({ nickname: newNickname })
+          .eq('id', configData.id);
+          
+        return NextResponse.json({ success: true });
+      }
+      return NextResponse.json({ error: '처리 실패' }, { status: 400 });
+    }
+
     if (action === 'reward') {
       const { bandName, nickname } = payload;
       
@@ -85,79 +114,100 @@ export async function POST(req: Request) {
     }
 
     if (action === 'fetchDashboard') {
+      // month parameter: 0 = this month, -1 = last month, etc.
+      const monthOffset = payload?.monthOffset || 0;
+
       // 1. Fetch all configs
       const { data: configs } = await supabaseAdmin
         .from('attendance_logs')
         .select('*')
         .like('nickname', '___CONFIG_V2:%');
 
-      if (!configs) return NextResponse.json({ bands: [] });
+      if (!configs) return NextResponse.json({ bands: [], summary: { totalBands: 0, totalUsers: 0, totalWinners: 0 } });
 
-      // 2. Fetch all check-ins for this month to calculate participation and find winners
+      // 2. Calculate date range
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const targetMonth = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+      const startOfMonth = targetMonth.toISOString();
+      const endOfMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0, 23, 59, 59).toISOString();
       
       const { data: checkins } = await supabaseAdmin
         .from('attendance_logs')
         .select('*')
-        .gte('created_at', startOfMonth);
+        .gte('created_at', startOfMonth)
+        .lte('created_at', endOfMonth);
 
       const checkinsByBand = (checkins || []).filter((log: any) => !log.nickname.startsWith('___'));
-      
-      // Calculate winners per band
-      const winnersByBand: Record<string, {name: string, days: number}[]> = {};
+
+      // Build per-user stats: { bandId: { nickname: { days, lastCheckIn } } }
+      const userStats: Record<string, Record<string, { days: number, lastCheckIn: string }>> = {};
       const uniqueUsersByBand: Record<string, Set<string>> = {};
 
       checkinsByBand.forEach((log: any) => {
         if (!uniqueUsersByBand[log.band_id]) uniqueUsersByBand[log.band_id] = new Set();
         uniqueUsersByBand[log.band_id].add(log.nickname);
-        
-        // Count for winners
-        // Since we need to count total days per user per band, we group them.
+
+        if (!userStats[log.band_id]) userStats[log.band_id] = {};
+        if (!userStats[log.band_id][log.nickname]) {
+          userStats[log.band_id][log.nickname] = { days: 0, lastCheckIn: log.created_at };
+        }
+        userStats[log.band_id][log.nickname].days++;
+        if (new Date(log.created_at) > new Date(userStats[log.band_id][log.nickname].lastCheckIn)) {
+          userStats[log.band_id][log.nickname].lastCheckIn = log.created_at;
+        }
       });
 
-      // Recalculate properly
-      const userStreaks: Record<string, Record<string, number>> = {};
-      checkinsByBand.forEach((log: any) => {
-        if (!userStreaks[log.band_id]) userStreaks[log.band_id] = {};
-        if (!userStreaks[log.band_id][log.nickname]) userStreaks[log.band_id][log.nickname] = 0;
-        userStreaks[log.band_id][log.nickname]++;
-      });
+      let totalWinners = 0;
+      let totalUsers = 0;
 
       const bandDataList = configs.map((conf: any) => {
         const jsonStr = conf.nickname.replace('___CONFIG_V2:', '').replace('___', '');
-        let payload: any = {};
-        try { payload = JSON.parse(jsonStr); } catch (e) {}
+        let configPayload: any = {};
+        try { configPayload = JSON.parse(jsonStr); } catch (e) {}
 
         const bandId = conf.band_id;
-        const totalMembers = payload.totalMembers || 1;
+        const totalMembers = configPayload.totalMembers || 1;
         const activeMembers = uniqueUsersByBand[bandId]?.size || 0;
         const participationRate = Math.round((activeMembers / totalMembers) * 100);
         
-        // Find winners
-        const winners = [];
-        if (userStreaks[bandId]) {
-          for (const [uname, days] of Object.entries(userStreaks[bandId])) {
-            if (days >= 20) {
-              winners.push({ name: uname, days });
+        // Build sorted user list for this band
+        const users: { name: string, days: number, lastCheckIn: string }[] = [];
+        const winners: { name: string, days: number }[] = [];
+        
+        if (userStats[bandId]) {
+          for (const [uname, stat] of Object.entries(userStats[bandId])) {
+            users.push({ name: uname, days: stat.days, lastCheckIn: stat.lastCheckIn });
+            if (stat.days >= 20) {
+              winners.push({ name: uname, days: stat.days });
+              totalWinners++;
             }
           }
+          users.sort((a, b) => b.days - a.days);
         }
+        totalUsers += activeMembers;
 
         return {
           bandId,
           bandName: bandId.split('-').slice(0, -1).join(' '),
-          platform: payload.platform,
+          platform: configPayload.platform,
           totalMembers,
-          contactInfo: payload.contactInfo,
-          banned: payload.banned === true,
+          contactInfo: configPayload.contactInfo,
+          banned: configPayload.banned === true,
           activeMembers,
           participationRate: isNaN(participationRate) ? 0 : participationRate,
-          winners
+          winners,
+          users
         };
       });
 
-      return NextResponse.json({ bands: bandDataList });
+      const summary = {
+        totalBands: configs.length,
+        totalUsers,
+        totalWinners,
+        month: `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}`
+      };
+
+      return NextResponse.json({ bands: bandDataList, summary });
     }
 
     return NextResponse.json({ error: '알 수 없는 액션입니다.' }, { status: 400 });
