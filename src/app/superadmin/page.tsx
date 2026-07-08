@@ -326,6 +326,17 @@ export default function SuperadminPage() {
                           <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${getPlatformStyle(band.platform)}`}>{getPlatformName(band.platform)}</span>
                         </div>
                         <div className="text-xs text-slate-400 mt-0.5">{band.contactInfo}</div>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100">
+                            오늘 활성: {band.active1Day}명
+                          </span>
+                          <span className="bg-purple-50 text-purple-600 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-100">
+                            최근 7일: {band.active7Days}명
+                          </span>
+                          <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200">
+                            최근 15일: {band.active15Days}명
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex-shrink-0 text-center w-20">

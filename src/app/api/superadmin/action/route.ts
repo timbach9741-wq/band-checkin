@@ -139,6 +139,36 @@ export async function POST(req: Request) {
 
       const checkinsByBand = (checkins || []).filter((log: any) => !log.nickname.startsWith('___'));
 
+      // 3. Fetch checkins for the last 15 days for activity metrics
+      const date15DaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: recentCheckinsData } = await supabaseAdmin
+        .from('attendance_logs')
+        .select('band_id, nickname, created_at')
+        .gte('created_at', date15DaysAgo);
+        
+      const recentCheckins = (recentCheckinsData || []).filter((log: any) => !log.nickname.startsWith('___'));
+      
+      const activeStats: Record<string, { day1: Set<string>, day7: Set<string>, day15: Set<string> }> = {};
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).getTime();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).getTime();
+      
+      recentCheckins.forEach((log: any) => {
+        const bandId = log.band_id;
+        if (!activeStats[bandId]) {
+          activeStats[bandId] = { day1: new Set(), day7: new Set(), day15: new Set() };
+        }
+        
+        const logTime = new Date(log.created_at).getTime();
+        activeStats[bandId].day15.add(log.nickname);
+        
+        if (logTime >= sevenDaysAgo) {
+          activeStats[bandId].day7.add(log.nickname);
+        }
+        if (logTime >= oneDayAgo) {
+          activeStats[bandId].day1.add(log.nickname);
+        }
+      });
+
       // Build per-user stats: { bandId: { nickname: { days, lastCheckIn } } }
       const userStats: Record<string, Record<string, { days: number, lastCheckIn: string }>> = {};
       const uniqueUsersByBand: Record<string, Set<string>> = {};
@@ -195,6 +225,9 @@ export async function POST(req: Request) {
           banned: configPayload.banned === true,
           activeMembers,
           participationRate: isNaN(participationRate) ? 0 : participationRate,
+          active1Day: activeStats[bandId]?.day1.size || 0,
+          active7Days: activeStats[bandId]?.day7.size || 0,
+          active15Days: activeStats[bandId]?.day15.size || 0,
           winners,
           users
         };
