@@ -34,8 +34,14 @@ export default function Home() {
       return;
     }
 
-    if (!contactInfo.trim()) {
-      alert('쿠폰 수령처(연락처 또는 카카오톡 아이디)를 입력해주세요!');
+    const contactTrimmed = contactInfo.trim();
+    if (!contactTrimmed) {
+      alert('쿠폰 수령자 이름 및 연락처(또는 카톡ID)를 입력해주세요!');
+      return;
+    }
+
+    if (!contactTrimmed.includes('/') && !contactTrimmed.includes(' ')) {
+      alert('형식이 올바르지 않습니다.\n\n반드시 [성명]과 [연락처]를 모두 적어주세요!\n\n작성 예시:\n- 홍길동 / 010-1234-5678\n- 김철수 / 카톡ID: mykakao');
       return;
     }
 
@@ -220,13 +226,13 @@ export default function Home() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
                     <span className="bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
-                    쿠폰 수령자(방장) 이름 및 연락처(또는 카톡ID)
+                    쿠폰 수령자 성명 / 연락처 (또는 카톡ID)
                   </label>
                   <input 
                     type="text" 
                     value={contactInfo}
                     onChange={(e) => setContactInfo(e.target.value)}
-                    placeholder="예: 홍길동 / 010-1234-5678 (또는 카톡ID)" 
+                    placeholder="필수 양식: 홍길동 / 010-1234-5678" 
                     className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-3 text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all font-medium placeholder-slate-400"
                   />
                   <p className="text-xs text-slate-500 ml-2 font-medium">※ 우수 달성자 혜택 전송 시 본인 확인용으로 사용되며 안전하게 암호화됩니다.</p>
