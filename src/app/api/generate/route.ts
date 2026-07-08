@@ -36,11 +36,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'PIN 번호는 4자리 숫자여야 합니다.' }, { status: 400 });
     }
 
-    const safeName = bandName.trim().replace(/\s+/g, '-').toLowerCase();
-    const uniqueId = `${safeName}-${Math.random().toString(36).substring(2, 6)}`;
+    // Make the URL slug safe by removing weird characters, but keep the original name in the config
+    const safeName = bandName.trim().replace(/[^a-zA-Z0-9가-힣\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
+    const uniqueId = `${safeName || 'band'}-${Math.random().toString(36).substring(2, 6)}`;
     
     // Create config payload
     const configPayload = {
+      bandName: bandName.trim(),
       targetDays: Number(targetDays),
       platform,
       totalMembers: Number(totalMembers),

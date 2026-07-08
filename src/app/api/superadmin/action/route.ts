@@ -218,7 +218,7 @@ export async function POST(req: Request) {
 
         return {
           bandId,
-          bandName: bandId.split('-').slice(0, -1).join(' '),
+          bandName: configPayload.bandName || bandId.split('-').slice(0, -1).join(' '),
           platform: configPayload.platform,
           totalMembers,
           contactInfo: configPayload.contactInfo,

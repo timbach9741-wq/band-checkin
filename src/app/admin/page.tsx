@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabaseClient';
 function AdminDashboard() {
   const searchParams = useSearchParams();
   const bandId = searchParams.get('band');
+  const [bandName, setBandName] = useState(bandId ? bandId.split('-').slice(0, -1).join(' ') : '방');
   
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -34,6 +35,9 @@ function AdminDashboard() {
       
       if (res.ok) {
         setIsAuthenticated(true);
+        if (data.bandName) {
+          setBandName(data.bandName);
+        }
         fetchStats();
       } else {
         setErrorMsg(data.error || '비밀번호가 일치하지 않습니다.');
@@ -142,7 +146,7 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
       <header className="bg-white shadow-sm border-b border-slate-200 px-4 py-5 mb-8 sticky top-0 z-10 flex justify-between items-center">
-        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">👑 내 방 통계 대시보드</h1>
+        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">👑 {bandName} 대시보드</h1>
       </header>
 
       <main className="max-w-4xl mx-auto p-4 space-y-6">

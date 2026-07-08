@@ -44,12 +44,8 @@ export default function Home() {
       return;
     }
 
-    const isValid = /^[a-zA-Z0-9가-힣_-\s]+$/.test(newBandName.trim());
-    if (!isValid) {
-      alert('이름은 한글, 영문, 숫자, 띄어쓰기, 하이픈(-)만 사용할 수 있습니다. 특수문자는 빼주세요!');
-      return;
-    }
-
+    // Removed regex validation to allow emojis, commas, and special characters in band names.
+    // The backend API already sanitizes the bandName when creating the URL-safe bandId.
     setIsGenerating(true);
     
     try {

@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     }
 
     let isValid = false;
+    let bandName = null;
     
     if (configData.nickname.startsWith('___CONFIG_V2:')) {
       const jsonStr = configData.nickname.replace('___CONFIG_V2:', '').replace('___', '');
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
         const fullConfig = JSON.parse(jsonStr);
         if (fullConfig.pin === pin) {
           isValid = true;
+          bandName = fullConfig.bandName;
         }
       } catch (e) {
         console.error('Failed to parse V2 config');
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
     }
 
     if (isValid) {
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, bandName: bandName || bandId.split('-').slice(0, -1).join(' ') });
     } else {
       return NextResponse.json({ error: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }

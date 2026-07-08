@@ -34,7 +34,8 @@ export async function GET(req: Request) {
         configPayload = {
           targetDays: fullConfig.targetDays,
           platform: fullConfig.platform,
-          totalMembers: fullConfig.totalMembers
+          totalMembers: fullConfig.totalMembers,
+          bandName: fullConfig.bandName || bandId.split('-').slice(0, -1).join(' ')
         };
         isBanned = fullConfig.banned === true;
       } catch (e) {

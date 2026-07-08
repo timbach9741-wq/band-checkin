@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabaseClient';
 function CheckInContent() {
   const searchParams = useSearchParams();
   const bandId = searchParams.get('band') || 'default';
-  const bandTitle = searchParams.get('title') || '오늘의 출석체크';
+  const [bandTitle, setBandTitle] = useState('오늘의 출석체크');
   
   const [nickname, setNickname] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -185,6 +185,11 @@ function CheckInContent() {
           if (data.config) {
             setTargetDays(data.config.targetDays || 20);
             setPlatform(data.config.platform || 'band');
+            if (data.config.bandName) {
+              setBandTitle(data.config.bandName);
+            } else {
+              setBandTitle(bandId.split('-').slice(0, -1).join(' '));
+            }
           }
           if (data.globalMarquee) setGlobalMarquee(data.globalMarquee);
         }
