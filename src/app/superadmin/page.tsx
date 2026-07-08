@@ -19,7 +19,7 @@ export default function SuperadminPage() {
     { id: 'band', label: '네이버밴드', active: 'bg-[#00C73C] text-white border-[#00C73C]', inactive: 'text-[#00C73C] bg-white border-slate-200 hover:bg-[#00C73C]/10 hover:border-[#00C73C]' },
     { id: 'daangn', label: '당근', active: 'bg-[#FF7E36] text-white border-[#FF7E36]', inactive: 'text-[#FF7E36] bg-white border-slate-200 hover:bg-[#FF7E36]/10 hover:border-[#FF7E36]' },
     { id: 'kakao', label: '카카오톡', active: 'bg-[#FEE500] text-[#371D1E] border-[#FEE500]', inactive: 'text-[#371D1E] bg-white border-slate-200 hover:bg-[#FEE500]/20 hover:border-[#FEE500]' },
-    { id: 'personal', label: '소모임/개인', active: 'bg-[#FD4636] text-white border-[#FD4636]', inactive: 'text-[#FD4636] bg-white border-slate-200 hover:bg-[#FD4636]/10 hover:border-[#FD4636]' }
+    { id: 'personal', label: '소모임(App)', active: 'bg-[#FD4636] text-white border-[#FD4636]', inactive: 'text-[#FD4636] bg-white border-slate-200 hover:bg-[#FD4636]/10 hover:border-[#FD4636]' }
   ];
 
   const getPlatformName = (platform: string) => {
@@ -27,7 +27,7 @@ export default function SuperadminPage() {
     if (p.includes('band')) return '네이버밴드';
     if (p.includes('kakao')) return '카카오톡';
     if (p.includes('daangn')) return '당근';
-    if (p.includes('somoim') || p.includes('personal')) return '소모임/개인';
+    if (p.includes('somoim') || p.includes('personal')) return '소모임(App)';
     return p.toUpperCase();
   };
 

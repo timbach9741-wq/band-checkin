@@ -29,8 +29,8 @@ export default function Home() {
       return;
     }
 
-    if (!totalMembers || isNaN(Number(totalMembers)) || Number(totalMembers) <= 0) {
-      alert('올바른 총 인원수를 입력해주세요!');
+    if (!totalMembers || isNaN(Number(totalMembers)) || Number(totalMembers) < 10) {
+      alert('이벤트 혜택은 10인 이상의 단체 모임에만 제공됩니다. 10명 이상의 인원을 입력해주세요!');
       return;
     }
 
@@ -96,7 +96,7 @@ export default function Home() {
     'band': '네이버 밴드',
     'daangn': '당근마켓 동네생활',
     'kakao': '카카오톡 오픈채팅',
-    'personal': '소모임 / 개인 목표'
+    'personal': '소모임 (App)'
   };
 
   return (
