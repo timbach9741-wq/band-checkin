@@ -123,7 +123,25 @@ export async function POST(req: Request) {
         .select('*')
         .like('nickname', '___CONFIG_V2:%');
 
-      if (!configs) return NextResponse.json({ bands: [], summary: { totalBands: 0, totalUsers: 0, totalWinners: 0 } });
+      if (!configs) return NextResponse.json({ bands: [], summary: { totalBands: 0, totalUsers: 0, totalWinners: 0 }, inquiries: [] });
+
+      // 1.5 Fetch Inquiries
+      const { data: inquiryLogs } = await supabaseAdmin
+        .from('attendance_logs')
+        .select('*')
+        .eq('band_id', 'SYSTEM_INQUIRY');
+
+      const inquiries = (inquiryLogs || []).map((log: any) => {
+        try {
+          const match = log.nickname.match(/___INQUIRY:(.*?)___/);
+          if (match) {
+            return { id: log.id, ...JSON.parse(match[1]) };
+          }
+        } catch (e) {}
+        return null;
+      }).filter(Boolean);
+      
+      inquiries.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
       // 2. Calculate date range
       const now = new Date();
@@ -241,7 +259,7 @@ export async function POST(req: Request) {
         month: `${targetMonth.getFullYear()}-${String(targetMonth.getMonth() + 1).padStart(2, '0')}`
       };
 
-      return NextResponse.json({ bands: bandDataList, summary });
+      return NextResponse.json({ bands: bandDataList, summary, inquiries });
     }
 
     return NextResponse.json({ error: '알 수 없는 액션입니다.' }, { status: 400 });

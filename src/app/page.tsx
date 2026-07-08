@@ -15,6 +15,13 @@ export default function Home() {
   const [origin, setOrigin] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  
+  // Inquiry Modal State
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
+  const [inquiryType, setInquiryType] = useState('');
+  const [inquiryBandName, setInquiryBandName] = useState('');
+  const [inquiryContact, setInquiryContact] = useState('');
+  const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -95,6 +102,46 @@ export default function Home() {
     });
   };
 
+  const handleOpenInquiry = (type: string) => {
+    setInquiryType(type);
+    setIsSupportOpen(false);
+    setIsInquiryModalOpen(true);
+  };
+
+  const handleSubmitInquiry = async () => {
+    if (!inquiryBandName.trim() || !inquiryContact.trim()) {
+      alert('방 이름과 연락처를 모두 입력해주세요!');
+      return;
+    }
+    
+    setIsSubmittingInquiry(true);
+    try {
+      const response = await fetch('/api/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: inquiryType,
+          bandName: inquiryBandName,
+          contact: inquiryContact
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '문의 접수에 실패했습니다.');
+      }
+
+      alert('문의가 성공적으로 접수되었습니다.\n마스터 관리자가 확인 후 연락드리겠습니다!');
+      setIsInquiryModalOpen(false);
+      setInquiryBandName('');
+      setInquiryContact('');
+    } catch (err: any) {
+      alert(err.message || '서버 오류가 발생했습니다.');
+    } finally {
+      setIsSubmittingInquiry(false);
+    }
+  };
+
   const platformLabels: Record<string, string> = {
     'band': '네이버 밴드',
     'daangn': '당근마켓 동네생활',
@@ -120,49 +167,34 @@ export default function Home() {
               <span className="text-base">✈️</span> 링크 / 암호 찾기 ▾
             </button>
             <div className={`absolute right-0 top-full w-72 bg-white border border-slate-200 shadow-xl rounded-xl p-2 transition-all flex flex-col gap-1 z-50 origin-top-right ${isSupportOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
-              <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-100 mb-1">어떤 문제가 있으신가요? (텔레그램 연결)</div>
-              <a 
-                href="https://t.me/YOUR_TELEGRAM_LINK" 
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
-                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              <div className="px-3 py-2 text-xs font-black text-slate-400 border-b border-slate-100 mb-1">어떤 문제가 있으신가요?</div>
+              <button 
+                onClick={() => handleOpenInquiry('비밀번호 분실')}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors w-full"
               >
                 🤔 관리자 비밀번호를 잊어버리셨나요?
-              </a>
-              <a 
-                href="https://t.me/YOUR_TELEGRAM_LINK" 
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
-                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              </button>
+              <button 
+                onClick={() => handleOpenInquiry('관리자 링크 분실')}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors w-full"
               >
                 🤔 관리자 접속 링크를 잊어버리셨나요?
-              </a>
-              <a 
-                href="https://t.me/YOUR_TELEGRAM_LINK" 
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => { setIsSupportOpen(false); e.preventDefault(); alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)'); }}
-                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors"
+              </button>
+              <button 
+                onClick={() => handleOpenInquiry('회원용 링크 분실')}
+                className="text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 p-3 rounded-lg text-left transition-colors w-full"
               >
                 🤔 회원용 출석체크 링크를 분실하셨나요?
-              </a>
+              </button>
             </div>
           </div>
 
-          <a 
-            href="https://t.me/YOUR_TELEGRAM_LINK" 
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              alert('대표님의 텔레그램(Telegram) 방으로 연결됩니다.\n(현재 임시 주소입니다. 텔레그램 주소를 알려주시면 바로 반영하겠습니다!)');
-            }}
+          <button 
+            onClick={() => handleOpenInquiry('제휴 및 기타 문의')}
             className="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
           >
             제휴 문의
-          </a>
+          </button>
         </div>
       </header>
 
@@ -459,6 +491,70 @@ export default function Home() {
         </footer>
 
       </main>
+
+      {/* 문의하기 모달 */}
+      {isInquiryModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                <span>✈️</span> 문의 접수하기
+              </h3>
+              <button 
+                onClick={() => setIsInquiryModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5">
+              <div className="bg-indigo-50 text-indigo-700 p-4 rounded-xl text-sm font-bold break-keep leading-relaxed">
+                [{inquiryType}] 문의입니다.<br/>
+                정보를 남겨주시면 마스터 관리자가 확인 후 기재해주신 연락처로 직접 안내해 드립니다.
+              </div>
+
+              <div>
+                <label className="block text-sm font-black text-slate-700 mb-2">방 이름 (또는 성함)</label>
+                <input 
+                  type="text" 
+                  value={inquiryBandName}
+                  onChange={(e) => setInquiryBandName(e.target.value)}
+                  placeholder="예: 강남 다이어트 모임"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-black text-slate-700 mb-2">회신받으실 연락처 (또는 카톡ID)</label>
+                <input 
+                  type="text" 
+                  value={inquiryContact}
+                  onChange={(e) => setInquiryContact(e.target.value)}
+                  placeholder="예: 010-1234-5678"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 pt-2 pb-6 flex gap-3">
+              <button 
+                onClick={() => setIsInquiryModalOpen(false)}
+                className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                취소
+              </button>
+              <button 
+                onClick={handleSubmitInquiry}
+                disabled={isSubmittingInquiry}
+                className="flex-1 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
+              >
+                {isSubmittingInquiry ? '접수 중...' : '문의 접수하기'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

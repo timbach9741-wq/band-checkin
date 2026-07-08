@@ -9,6 +9,7 @@ export default function SuperadminPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [bands, setBands] = useState<any[]>([]);
+  const [inquiries, setInquiries] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({ totalBands: 0, totalUsers: 0, totalWinners: 0, month: '' });
   const [expandedBand, setExpandedBand] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +52,7 @@ export default function SuperadminPage() {
       const data = await res.json();
       if (res.ok) {
         setBands(data.bands || []);
+        setInquiries(data.inquiries || []);
         setSummary(data.summary || {});
       }
     } catch (e) {
@@ -244,6 +246,46 @@ export default function SuperadminPage() {
             <p className="text-lg font-black text-slate-800">{summary.month}</p>
           </div>
         </div>
+
+        {/* 접수된 문의 내역 */}
+        {inquiries.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-orange-200 overflow-hidden">
+            <div className="bg-orange-50 px-6 py-4 border-b border-orange-100 flex items-center justify-between">
+              <h2 className="text-lg font-black text-orange-800 flex items-center gap-2">
+                <span>🚨</span> 새로운 문의 내역이 접수되었습니다!
+              </h2>
+              <span className="bg-orange-200 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">
+                {inquiries.length}건
+              </span>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {inquiries.map((inquiry: any) => (
+                <div key={inquiry.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded-md">
+                        {inquiry.type}
+                      </span>
+                      <span className="text-slate-400 text-xs">
+                        {new Date(inquiry.timestamp).toLocaleString('ko-KR')}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                      <div>
+                        <span className="text-xs font-bold text-slate-400 mr-2">방 이름 (성함)</span>
+                        <span className="text-sm font-black text-slate-800">{inquiry.bandName}</span>
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-400 mr-2">연락처 (카톡ID)</span>
+                        <span className="text-sm font-black text-slate-800">{inquiry.contact}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 월별 선택 + 검색 */}
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
