@@ -113,6 +113,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, text: marqueeText });
     }
 
+    if (action === 'deleteInquiry') {
+      const { inquiryId } = payload;
+      
+      const { error } = await supabaseAdmin
+        .from('attendance_logs')
+        .delete()
+        .eq('id', inquiryId)
+        .eq('band_id', 'SYSTEM_INQUIRY'); // Extra safety check
+
+      if (error) {
+        return NextResponse.json({ error: '삭제 실패' }, { status: 500 });
+      }
+      
+      return NextResponse.json({ success: true });
+    }
+
     if (action === 'fetchDashboard') {
       // month parameter: 0 = this month, -1 = last month, etc.
       const monthOffset = payload?.monthOffset || 0;

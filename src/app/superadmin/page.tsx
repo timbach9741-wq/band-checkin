@@ -125,6 +125,25 @@ export default function SuperadminPage() {
     } catch (e) { alert('오류 발생'); }
   };
 
+  const handleDeleteInquiry = async (inquiryId: string) => {
+    if (!confirm('처리 완료(삭제) 하시겠습니까?')) return;
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteInquiry', password, payload: { inquiryId } })
+      });
+      if (res.ok) {
+        alert('문의 내역이 삭제되었습니다.');
+        fetchBands(password, monthOffset); // Refresh dashboard to update inquiries
+      } else {
+        alert('삭제 실패');
+      }
+    } catch (e) {
+      alert('오류 발생');
+    }
+  };
+
   const handleMonthChange = (offset: number) => {
     setMonthOffset(offset);
     fetchBands(password, offset);
@@ -281,6 +300,12 @@ export default function SuperadminPage() {
                       </div>
                     </div>
                   </div>
+                  <button 
+                    onClick={() => handleDeleteInquiry(inquiry.id)}
+                    className="shrink-0 mt-4 md:mt-0 bg-orange-100 hover:bg-orange-200 text-orange-700 font-bold px-4 py-2 rounded-xl transition-colors text-sm border border-orange-200"
+                  >
+                    ✓ 처리 완료 (삭제)
+                  </button>
                 </div>
               ))}
             </div>
