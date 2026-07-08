@@ -13,7 +13,14 @@ export default function SuperadminPage() {
   const [expandedBand, setExpandedBand] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [monthOffset, setMonthOffset] = useState(0);
-  const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+
+  const PLATFORMS = [
+    { id: 'band', label: '네이버밴드' },
+    { id: 'daangn', label: '당근' },
+    { id: 'kakao', label: '카카오톡' },
+    { id: 'somoim', label: '소모임' }
+  ];
 
   const getPlatformName = (platform: string) => {
     const p = platform?.toLowerCase() || '';
@@ -140,8 +147,8 @@ export default function SuperadminPage() {
   const filteredBands = bands.filter(b => {
     const matchesSearch = b.bandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.platform?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBand = selectedBandId ? b.bandId === selectedBandId : true;
-    return matchesSearch && matchesBand;
+    const matchesPlatform = selectedPlatform ? b.platform?.toLowerCase() === selectedPlatform : true;
+    return matchesSearch && matchesPlatform;
   });
 
   const getMonthLabel = (offset: number) => {
@@ -235,30 +242,30 @@ export default function SuperadminPage() {
           </div>
         </div>
 
-        {/* 밴드별 필터 탭 */}
+        {/* 플랫폼 필터 탭 */}
         {bands.length > 0 && (
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             <button
-              onClick={() => setSelectedBandId(null)}
+              onClick={() => setSelectedPlatform(null)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                selectedBandId === null
+                selectedPlatform === null
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               전체보기
             </button>
-            {bands.map((band) => (
+            {PLATFORMS.map((plat) => (
               <button
-                key={band.bandId}
-                onClick={() => setSelectedBandId(selectedBandId === band.bandId ? null : band.bandId)}
+                key={plat.id}
+                onClick={() => setSelectedPlatform(selectedPlatform === plat.id ? null : plat.id)}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                  selectedBandId === band.bandId
+                  selectedPlatform === plat.id
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300'
                 }`}
               >
-                {band.bandName}
+                {plat.label}
               </button>
             ))}
           </div>
