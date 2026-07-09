@@ -68,7 +68,7 @@ function AdminDashboard() {
       return;
     }
 
-    const validData = data.filter((log: any) => !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___MARQUEE:'));
+    const validData = data.filter((log: any) => !log.nickname.startsWith('___'));
 
     const userStats = validData.reduce((acc: any, log: any) => {
       if (!acc[log.nickname]) {
