@@ -240,12 +240,6 @@ function CheckInContent() {
           }
         });
         setAttendeeMoods(moodMap);
-
-        // myMood 초기화 (로컬 스토리지에 닉네임이 있다면)
-        const savedNickname = localStorage.getItem('checkin_nickname');
-        if (savedNickname && moodMap[savedNickname]) {
-          setMyMood(moodMap[savedNickname]);
-        }
         
         // 닉네임별 이번 달 총 출석 횟수 계산
         const streakMap = new Map<string, number>();
@@ -257,6 +251,18 @@ function CheckInContent() {
         const todayLogs = validLogs.filter((log: any) => new Date(log.created_at).getTime() >= todayStart.getTime());
         todayLogs.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+        // myMood 및 hasCheckedIn 초기화 (로컬 스토리지에 닉네임이 있다면)
+        const savedNickname = localStorage.getItem('checkin_nickname');
+        if (savedNickname) {
+          setNickname(savedNickname);
+          if (moodMap[savedNickname]) {
+            setMyMood(moodMap[savedNickname]);
+          }
+          if (todayLogs.some((log: any) => log.nickname === savedNickname)) {
+            setHasCheckedIn(true);
+            setStreakDays(streakMap.get(savedNickname) || 1);
+          }
+        }
         const formatted = todayLogs.map((log: any) => {
           const date = new Date(log.created_at);
           return {
@@ -273,17 +279,18 @@ function CheckInContent() {
   }, [bandId]);
 
   const handleUpdateMood = async (moodId: number) => {
-    if (!nickname) return;
+    const targetNickname = nickname || localStorage.getItem('checkin_nickname');
+    if (!targetNickname) return;
     setIsUpdatingMood(true);
     try {
       const res = await fetch('/api/check-in/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bandId, nickname, statusIndex: moodId })
+        body: JSON.stringify({ bandId, nickname: targetNickname, statusIndex: moodId })
       });
       if (!res.ok) throw new Error('상태 업데이트 실패');
       setMyMood(moodId);
-      setAttendeeMoods(prev => ({ ...prev, [nickname]: moodId }));
+      setAttendeeMoods(prev => ({ ...prev, [targetNickname]: moodId }));
     } catch (e) {
       alert('상태 업데이트에 실패했습니다.');
     } finally {
@@ -309,8 +316,20 @@ function CheckInContent() {
       });
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        if (data.error === '오늘은 이미 출석하셨습니다!') {
+          setHasCheckedIn(true);
+          const existing = attendees.find(a => a.name === nickname);
+          if (existing) setStreakDays(existing.streak);
+          alert('이미 출석을 완료하셨습니다. 아래에서 기분을 선택해주세요!');
+          setIsSubmitting(false);
+          localStorage.setItem('checkin_nickname', nickname);
+          return;
+        }
+        throw new Error(data.error);
+      }
 
+      localStorage.setItem('checkin_nickname', nickname);
       setStreakDays(data.totalDays);
       if (data.isWinner) {
         setShowConfetti(true);
