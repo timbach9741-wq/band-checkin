@@ -15,6 +15,7 @@ function AdminDashboard() {
   const [stats, setStats] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isBannerOpen, setIsBannerOpen] = useState(false);
 
   const handleVerifyPin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -215,17 +216,7 @@ function AdminDashboard() {
         </button>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 space-y-6">
-        {totalMembers > 0 && (
-          <div className={`p-6 rounded-2xl shadow-sm border ${isRewardSuccess ? 'bg-yellow-50 border-yellow-300' : 'bg-slate-100 border-slate-300'}`}>
-            <h2 className={`text-xl font-black mb-2 ${isRewardSuccess ? 'text-yellow-800' : 'text-slate-600'}`}>{rewardTitle}</h2>
-            <p className={`font-bold ${isRewardSuccess ? 'text-yellow-700' : 'text-slate-500'}`}>{rewardDesc}</p>
-            {!isRewardSuccess && (
-              <p className="text-sm mt-2 text-slate-400 font-medium">※ 전체 인원({totalMembers}명)의 60% 이상이 20일 출석을 완료해야 방장님께 운영 지원용 기프티콘이 지급됩니다.</p>
-            )}
-          </div>
-        )}
-
+      <main className="max-w-4xl mx-auto p-4 space-y-6 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-sm font-bold text-slate-500 mb-1">현재 출석 인원</h3>
@@ -284,6 +275,45 @@ function AdminDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Sticky Bottom Banner */}
+      {totalMembers > 0 && (
+        <div className="fixed bottom-0 left-0 w-full z-50">
+          {/* Expanded Content */}
+          <div className={`bg-white border-t border-slate-200 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out overflow-hidden ${isBannerOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`p-6 ${isRewardSuccess ? 'bg-yellow-50/50' : 'bg-slate-50'}`}>
+              <div className="max-w-4xl mx-auto">
+                <h2 className={`text-xl font-black mb-2 ${isRewardSuccess ? 'text-yellow-800' : 'text-slate-700'}`}>{rewardTitle}</h2>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-1 bg-slate-200 h-3 rounded-full overflow-hidden">
+                    <div className={`h-full ${isRewardSuccess ? 'bg-yellow-400' : 'bg-indigo-500'}`} style={{ width: `${Math.min(currentRate, 100)}%` }}></div>
+                  </div>
+                  <span className={`font-bold ${isRewardSuccess ? 'text-yellow-700' : 'text-slate-500'}`}>{currentRate}%</span>
+                </div>
+                <p className={`font-bold text-sm ${isRewardSuccess ? 'text-yellow-700' : 'text-slate-500'}`}>{rewardDesc}</p>
+                {!isRewardSuccess && (
+                  <p className="text-xs mt-3 text-slate-400 font-medium">※ 방 전체 인원({totalMembers}명)의 60% 이상이 20일 출석을 완료해야 방장님께 운영 지원용 기프티콘이 지급됩니다.</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Toggle Bar */}
+          <button 
+            onClick={() => setIsBannerOpen(!isBannerOpen)}
+            className="w-full bg-slate-900 text-white p-3 flex items-center justify-between shadow-lg hover:bg-slate-800 transition-colors"
+          >
+            <div className="flex items-center gap-3 pl-2 max-w-4xl mx-auto w-full">
+              <span className={`transform transition-transform duration-300 flex-shrink-0 bg-white/20 rounded-full p-1 ${isBannerOpen ? 'rotate-180' : ''}`}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+              </span>
+              <span className="text-sm sm:text-base font-bold flex items-center gap-2">
+                🎁 오늘의 출석체크 & 혜택
+              </span>
+            </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
