@@ -198,6 +198,21 @@ export default function SuperadminPage() {
     return `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
   };
 
+  const getRewardStatus = (total: number, winners: number) => {
+    const rate = total > 0 ? (winners / total) * 100 : 0;
+    if (total <= 30) {
+      if (rate >= 60) return { success: true, reward: '커피 1잔', desc: '60% 달성' };
+      return { success: false, rate: Math.floor(rate) };
+    } else if (total <= 50) {
+      if (rate >= 60) return { success: true, reward: '커피 3잔', desc: '60% 달성' };
+      return { success: false, rate: Math.floor(rate) };
+    } else {
+      if (rate >= 60) return { success: true, reward: '커피 5잔', desc: '60% 달성' };
+      if (winners >= 30) return { success: true, reward: '커피 5잔', desc: '출석 30명+' };
+      return { success: false, rate: Math.floor(rate) };
+    }
+  };
+
   // ========== LOGIN SCREEN ==========
   if (!isAuthenticated) {
     return (
@@ -413,12 +428,26 @@ export default function SuperadminPage() {
                         <div className="text-[10px] text-slate-400">{band.activeMembers} / {band.totalMembers}명</div>
                       </div>
 
-                      <div className="flex-shrink-0 w-20 text-center">
-                        {band.winners?.length > 0 ? (
-                          <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded border border-yellow-200">🎁 {band.winners.length}명</span>
-                        ) : (
-                          <span className="text-xs text-slate-300">-</span>
-                        )}
+                      <div className="flex-shrink-0 w-32 text-center flex flex-col items-center justify-center">
+                        {(() => {
+                          const status = getRewardStatus(band.totalMembers, band.winners?.length || 0);
+                          if (status.success) {
+                            return (
+                              <div className="bg-yellow-400 text-yellow-900 px-3 py-1.5 rounded-lg shadow-sm border border-yellow-500 flex flex-col items-center animate-bounce-slow">
+                                <span className="text-xs font-black tracking-tight">{status.reward} 확정!</span>
+                                <span className="text-[9px] font-bold opacity-80">({status.desc})</span>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-200 flex flex-col items-center">
+                                <span className="text-[10px] font-bold">목표 미달성</span>
+                                <span className="text-[9px]">({status.rate}% / 60%)</span>
+                              </div>
+                            );
+                          }
+                        })()}
+                        <div className="text-[10px] text-slate-400 mt-1 font-bold">응모: {band.winners?.length || 0}명</div>
                       </div>
 
                       <div className="flex-shrink-0 text-slate-400 text-lg font-bold">
