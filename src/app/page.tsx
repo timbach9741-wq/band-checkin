@@ -442,6 +442,49 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 3.5. 방장 특별 혜택 안내 (Reward Policy) */}
+        <section className="w-full bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 py-20 px-4 border-b border-indigo-900/50">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-block bg-yellow-400 text-yellow-900 font-black px-4 py-1.5 rounded-full text-sm tracking-tight mb-6 animate-pulse">
+              모임장(운영진) 특별 지원 이벤트 🎁
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black mb-6 text-white break-keep leading-tight">
+              회원들을 독려해 <span className="text-yellow-400">참여율 60%</span>를 달성하면<br className="hidden md:block" />
+              운영 지원용 기프티콘을 팍팍 쏩니다!
+            </h2>
+            <p className="text-indigo-200 text-lg mb-12 font-medium break-keep">
+              방장님의 모임 활성화를 저희가 직접 지원해 드립니다. 한 달 동안 <strong className="text-white">20일 출석 달성자 비율이 60%</strong>를 넘기면 모임 규모에 따라 기프티콘(커피 등)을 일괄 지급해 드립니다!
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-left hover:bg-white/15 transition-all">
+                <div className="text-indigo-300 font-bold text-sm mb-1">소형 모임 (10~30명)</div>
+                <div className="text-white text-xl font-black mb-4">60% 달성 시</div>
+                <div className="text-yellow-400 text-3xl font-black flex items-center gap-2">
+                  ☕ 커피 1잔
+                </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-left hover:bg-white/15 transition-all relative">
+                <div className="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full rotate-12 shadow-lg">가장 추천!</div>
+                <div className="text-indigo-300 font-bold text-sm mb-1">중형 모임 (31~50명)</div>
+                <div className="text-white text-xl font-black mb-4">60% 달성 시</div>
+                <div className="text-yellow-400 text-3xl font-black flex items-center gap-2">
+                  ☕ 커피 3잔
+                </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-left hover:bg-white/15 transition-all">
+                <div className="text-indigo-300 font-bold text-sm mb-1">대형 모임 (51명 이상)</div>
+                <div className="text-white text-lg font-black mb-1 break-keep">60% 달성 또는</div>
+                <div className="text-white text-lg font-black mb-4 break-keep">출석자 30명+ 시</div>
+                <div className="text-yellow-400 text-3xl font-black flex items-center gap-2">
+                  ☕ 커피 5잔
+                </div>
+              </div>
+            </div>
+            <p className="text-indigo-300 text-xs mt-8 font-medium">※ 지급받은 기프티콘은 방장님이 모임 내 자체 이벤트 경품으로 자유롭게 사용하시면 됩니다.</p>
+          </div>
+        </section>
+
         {/* 4. 유저 제공 혜택 (Features) */}
         <section className="w-full bg-white py-24 px-4">
           <div className="max-w-5xl mx-auto">
