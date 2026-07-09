@@ -433,7 +433,7 @@ export default function Home() {
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">2</div>
                 <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">공지사항 1회 등록 (완전자동)</h3>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
-                  네이버 밴드나 카카오톡 '공지사항'에 한 번만 등록해 두세요. 매번 링크를 올릴 필요 없이 매월 1일 자동으로 새로운 출석부가 갱신됩니다!
+                  네이버 밴드나 카카오톡 '공지사항'에 한번만 등록해 두세요. 매번 링크를 올릴 필요 없이 매월 1일 자동으로 새로운 출석부가 갱신됩니다!
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
