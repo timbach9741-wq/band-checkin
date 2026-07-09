@@ -424,23 +424,23 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">1</div>
-                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">10초 만에 링크 발급</h3>
+                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">10초 만에 링크 자동 세팅</h3>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
-                  위 폼에 목표나 모임 이름을 적고 버튼을 눌러 나만의 고유한 출석체크 링크를 발급받으세요.
+                  상단 폼에 모임 이름과 인원수를 적고 링크를 발급받으세요. 방장 혜택 수령을 위해 실제 활동 인원수를 정확히 입력해야 합니다.
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">2</div>
-                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">단톡방 공유 및 저장</h3>
+                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">공지사항 1회 등록 (완전자동)</h3>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
-                  발급받은 '참여용 링크'를 단톡방 공지에 올리거나 나만의 북마크에 저장해 매일매일 도전하세요!
+                  네이버 밴드나 카카오톡 '공지사항'에 한 번만 등록해 두세요. 매번 링크를 올릴 필요 없이 매월 1일 자동으로 새로운 출석부가 갱신됩니다!
                 </p>
               </div>
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center relative hover:-translate-y-2 transition-transform duration-300">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-black text-xl border-4 border-white shadow-sm">3</div>
-                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">달성자 확인 및 보상</h3>
+                <h3 className="text-xl font-bold text-slate-800 mt-4 mb-3">달성 확인 & 커피 혜택</h3>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed break-keep">
-                  월말에 '관리자 링크'에 접속해 목표를 달성한 명단을 뽑고 우리끼리 보상을 나누면 끝!
+                  월말에 '관리자 링크'에 접속해 60% 달성을 확인하세요. 지원되는 '커피 기프티콘'으로 모임원들에게 자체 이벤트를 열어주시면 완벽합니다!
                 </p>
               </div>
             </div>
