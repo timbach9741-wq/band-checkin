@@ -461,26 +461,22 @@ function CheckInContent() {
                   <span>지금 내 상태나 기분을 자유롭게 알려주세요!</span>
                   <span className="text-xl animate-bounce">👇</span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 relative z-10">
+                <div className="flex flex-wrap justify-center gap-2 md:gap-3 relative z-10">
                   {MOOD_OPTIONS.map(mood => (
                     <button
                       key={mood.id}
                       disabled={isUpdatingMood}
                       onClick={() => handleUpdateMood(mood.id)}
-                      className={`p-3 md:p-4 rounded-2xl text-sm md:text-base font-bold transition-all duration-300 text-left flex items-center gap-4 ${
+                      className={`py-2.5 px-4 md:py-3 md:px-5 rounded-full text-sm md:text-base font-bold transition-all duration-300 flex items-center gap-2.5 shadow-sm hover:shadow-md ${
                         myMood === mood.id 
-                          ? 'bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-[0_8px_30px_rgba(236,72,153,0.5)] border border-pink-400 scale-[1.03] ring-2 ring-pink-300/50' 
-                          : 'bg-white/5 text-purple-100 hover:bg-white/15 hover:text-white border border-white/10 hover:border-white/30 hover:shadow-[0_8px_20px_rgba(255,255,255,0.05)] hover:-translate-y-1'
+                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_4px_15px_rgba(236,72,153,0.4)] border border-pink-400 scale-105' 
+                          : 'bg-white/5 text-purple-100 hover:bg-white/15 hover:text-white border border-white/10 hover:border-white/30 hover:-translate-y-0.5'
                       }`}
                     >
-                      <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl shadow-inner text-2xl transition-colors ${
-                         myMood === mood.id ? 'bg-white/20 border border-white/30' : 'bg-black/20 border border-white/5'
-                      }`}>
-                        <span className="drop-shadow-md">{mood.emoji}</span>
-                      </div>
-                      <span className="leading-tight tracking-wide flex-1">{mood.text}</span>
+                      <span className="text-lg md:text-xl drop-shadow-sm">{mood.emoji}</span>
+                      <span className="leading-none tracking-wide">{mood.text}</span>
                       {myMood === mood.id && (
-                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0 animate-pulse shadow-[0_0_10px_white]"></div>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full flex-shrink-0 animate-pulse ml-1 shadow-[0_0_8px_white]"></div>
                       )}
                     </button>
                   ))}
