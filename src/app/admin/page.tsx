@@ -101,6 +101,27 @@ function AdminDashboard() {
     setPin(prev => prev.slice(0, -1));
   };
 
+  const downloadCSV = () => {
+    let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+    csvContent += '순위,닉네임,누적출석일,최근출석시간,상태\n';
+    
+    stats.forEach((user: any, idx: number) => {
+      const date = new Date(user.lastCheckIn);
+      const formattedDate = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+      const status = user.days >= 20 ? '달성 완료' : `${20 - user.days}일 남음`;
+      csvContent += `${idx + 1},${user.name},${user.days}일,${formattedDate},${status}\n`;
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.setAttribute('download', `${bandName}_출석현황_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // 자동 제출
   useEffect(() => {
     if (pin.length === 4 && !isAuthenticated) {
@@ -182,8 +203,16 @@ function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
-      <header className="bg-white shadow-sm border-b border-slate-200 px-4 py-5 mb-8 sticky top-0 z-10 flex justify-between items-center">
-        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">👑 {bandName} 대시보드</h1>
+      <header className="bg-white shadow-sm border-b border-slate-200 px-4 py-4 mb-8 sticky top-0 z-10 flex justify-between items-center">
+        <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+          👑 {bandName}
+        </h1>
+        <button 
+          onClick={downloadCSV}
+          className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-1"
+        >
+          📥 엑셀(CSV) 다운
+        </button>
       </header>
 
       <main className="max-w-4xl mx-auto p-4 space-y-6">
