@@ -465,8 +465,7 @@ export default function Home() {
                   ☕ 커피 1잔
                 </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-left hover:bg-white/15 transition-all relative">
-                <div className="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full rotate-12 shadow-lg">가장 추천!</div>
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl text-left hover:bg-white/15 transition-all">
                 <div className="text-indigo-300 font-bold text-sm mb-1">중형 모임 (31~50명)</div>
                 <div className="text-white text-xl font-black mb-4">60% 달성 시</div>
                 <div className="text-yellow-400 text-3xl font-black flex items-center gap-2">
