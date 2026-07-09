@@ -25,17 +25,18 @@ export async function GET() {
     lastWeek.setDate(lastWeek.getDate() - 7);
     const lastWeekIso = lastWeek.toISOString();
 
-    // 7일간의 클릭 데이터 가져오기
+    // 7일간의 클릭 데이터 가져오기 (기존 attendance_logs 테이블 활용)
     const { data, error } = await supabaseAdmin
-      .from('game_clicks')
-      .select('category')
+      .from('attendance_logs')
+      .select('nickname')
+      .eq('band_id', 'SYSTEM_GAME_STATS')
       .gte('created_at', lastWeekIso);
 
     if (error || !data || data.length === 0) {
       return NextResponse.json(defaultMapping);
     }
 
-    // 카테고리별 클릭 수 집계
+    // 카테고리별 클릭 수 집계 (nickname 컬럼에 category가 저장되어 있음)
     const counts: Record<string, number> = {
       mz: 0,
       brain: 0,
@@ -44,8 +45,8 @@ export async function GET() {
     };
 
     data.forEach((row: any) => {
-      if (counts[row.category] !== undefined) {
-        counts[row.category]++;
+      if (counts[row.nickname] !== undefined) {
+        counts[row.nickname]++;
       }
     });
 

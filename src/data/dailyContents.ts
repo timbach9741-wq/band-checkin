@@ -1,50 +1,83 @@
-export interface DailyContent {
-  id: number;
+export type DailyContent = {
+  id: string;
   category: 'mz' | 'brain' | 'balance' | 'joke';
-  question: string;
-  options?: string[]; // For MZ quiz (4 choices) or Balance game (2 choices)
-  answer: string; // The correct answer or the result
-  explanation?: string; // Explanation for the answer
-}
+  title: string;
+  description: string;
+  options?: string[]; // 퀴즈의 경우 보기 제공
+  answer: string;
+  explanation?: string;
+};
 
 export const dailyContents: DailyContent[] = [
-  // MZ 신조어 퀴즈
-  { id: 1, category: 'mz', question: "다음 중 '추구미'의 올바른 뜻은?", options: ["추운 겨울에 먹는 구이", "내가 추구하는 미(아름다움/이미지)", "추가로 구매하는 미역", "추잡하게 구는 사람"], answer: "내가 추구하는 미(아름다움/이미지)", explanation: "자신이 지향하고 쫓고자 하는 스타일이나 이미지를 뜻합니다. (예: 내 추구미는 시크함이야)" },
-  { id: 2, category: 'mz', question: "'럭키비키'의 뜻으로 알맞은 것은?", options: ["행운의 강아지 이름", "운이 좋다는 뜻의 감탄사", "비키니 브랜드", "비가 오는 날의 행운"], answer: "운이 좋다는 뜻의 감탄사", explanation: "아이브 장원영의 초긍정적 사고방식(원영적 사고)에서 유래된 유행어로, '완전 럭키비키잖아!'처럼 쓰입니다." },
-  { id: 3, category: 'mz', question: "'완내스'는 무슨 줄임말일까요?", options: ["완전 내 스타일", "완전 내 스피드", "완벽한 내 스코어", "완벽하게 내리는 스노우"], answer: "완전 내 스타일", explanation: "음식이나 옷, 사람 등이 자신의 취향에 완벽하게 맞을 때 사용하는 말입니다." },
-  { id: 4, category: 'mz', question: "'오우야'를 요즘 표현으로 줄이면?", options: ["오우", "오야", "ㅗㅜㅑ", "우야"], answer: "ㅗㅜㅑ", explanation: "감탄사 '오우야'의 초성만 따서 시각적으로 표현한 밈입니다." },
-  { id: 5, category: 'mz', question: "'분조카'는 어디를 말하는 것일까요?", options: ["분식집 조그만 카페", "분위기 좋은 카페", "분노 조절 카운슬러", "분당에 있는 조용한 카페"], answer: "분위기 좋은 카페", explanation: "인스타그램 감성의 분위기 좋고 사진 찍기 좋은 카페를 줄여서 부르는 말입니다." },
-  { id: 6, category: 'mz', question: "'스불재'의 뜻은?", options: ["스스로 불러온 재앙", "스피드 불고기 재료", "스마트폰 불량 재시작", "스포일러 불법 재생"], answer: "스스로 불러온 재앙", explanation: "자신이 자초한 일로 인해 스스로 고통받는 상황을 자조적으로 이르는 말입니다." },
-  { id: 7, category: 'mz', question: "'중꺾마'의 원래 의미는?", options: ["중간에 꺾이는 마음", "중요한 건 꺾이지 않는 마음", "중국 꺾고 마라톤 우승", "중고거래 꺾기 마스터"], answer: "중요한 건 꺾이지 않는 마음", explanation: "어떤 시련에도 포기하지 않는 강한 의지를 뜻하는 e스포츠 발 유행어입니다." },
-  { id: 8, category: 'mz', question: "'식집사'의 뜻은?", options: ["식당에서 서빙하는 사람", "식물을 반려동물처럼 정성껏 키우는 사람", "식기세척기 집착하는 사람", "식빵에 집착하는 사람"], answer: "식물을 반려동물처럼 정성껏 키우는 사람", explanation: "반려동물을 키우는 사람을 '집사'라 부르듯, 반려식물을 정성껏 기르는 사람을 뜻합니다." },
+  // MZ 신조어 퀴즈 (16개)
+  { id: 'mz1', category: 'mz', title: 'MZ 신조어 영역', description: '다음 중 "분조카"의 올바른 뜻은?', options: ['분노 조절 카페', '분위기 좋은 카페', '분식집 떡볶이 카레', '분명히 조용했던 카페'], answer: '분위기 좋은 카페' },
+  { id: 'mz2', category: 'mz', title: 'MZ 신조어 영역', description: '"스불재"는 무슨 줄임말일까?', options: ['스스로 불러온 재앙', '스마트폰 불량 재시작', '스크린 불빛 재난', '스스로 불태운 재산'], answer: '스스로 불러온 재앙' },
+  { id: 'mz3', category: 'mz', title: 'MZ 신조어 영역', description: '"알잘딱깔센"의 올바른 뜻은?', options: ['알아서 잘 딱 깔끔하고 센스있게', '알고보니 잘생긴 딱 내스타일 센터', '알람 잘 딱 깔고 센스있게', '알뜰하고 잘게 딱 깔끔한 센터'], answer: '알아서 잘 딱 깔끔하고 센스있게' },
+  { id: 'mz4', category: 'mz', title: 'MZ 신조어 영역', description: '"점메추"의 뜻은?', options: ['점심 메뉴 추천', '점점 메말라가는 추억', '점수 메기는 추천', '점심 메이트 추천'], answer: '점심 메뉴 추천' },
+  { id: 'mz5', category: 'mz', title: 'MZ 신조어 영역', description: '"갓생"이란 어떤 의미일까?', options: ['신(God)처럼 완벽한 생물', '부지런하고 모범적인 삶', '막 태어난 생명', '갓 구운 생선'], answer: '부지런하고 모범적인 삶' },
+  { id: 'mz6', category: 'mz', title: 'MZ 신조어 영역', description: '"킹받네"의 올바른 의미는?', options: ['왕에게 상을 받네', '진짜 너무 열받네', '최고의 선물을 받네', '왕이 되어버렸네'], answer: '진짜 너무 열받네 (킹=King을 강조어로 사용)' },
+  { id: 'mz7', category: 'mz', title: 'MZ 신조어 영역', description: '"완내스"의 뜻은?', options: ['완전 내 스타일', '완벽한 내 스토리', '완전 내 스케줄', '완전히 내버린 스레기'], answer: '완전 내 스타일' },
+  { id: 'mz8', category: 'mz', title: 'MZ 신조어 영역', description: '"억텐"은 무슨 줄임말일까?', options: ['억지 텐션', '억울한 텐션', '억대의 텐트', '억지로 텐(10) 만들기'], answer: '억지 텐션 (억지로 분위기 맞춤)' },
+  { id: 'mz9', category: 'mz', title: 'MZ 신조어 영역', description: '"폼 미쳤다"의 뜻은?', options: ['거품이 너무 많다', '기량이나 상태가 최고조다', '폼클렌징이 좋다', '포즈가 이상하다'], answer: '기량이나 상태가 최고조다' },
+  { id: 'mz10', category: 'mz', title: 'MZ 신조어 영역', description: '"군침 싹 도노"에 어울리는 이모티콘 캐릭터는?', options: ['루피(잔망루피)', '뽀로로', '펭수', '춘식이'], answer: '루피 (잔망루피)' },
+  { id: 'mz11', category: 'mz', title: 'MZ 신조어 영역', description: '"중꺾마"의 뜻은?', options: ['중간에 꺾이는 마술', '중요한 것은 꺾이지 않는 마음', '중고차 꺾어 팔기 마스터', '중간고사 꺾인 마음'], answer: '중요한 것은 꺾이지 않는 마음' },
+  { id: 'mz12', category: 'mz', title: 'MZ 신조어 영역', description: '"너 T야?" 라는 질문의 의도는?', options: ['너 티셔츠 샀어?', '너 너무 감정 없이 이성적이야?', '너 통신사 SKT야?', '너 차(Tea) 마실래?'], answer: '너 너무 감정 없이 이성적이야? (MBTI의 T)' },
+  { id: 'mz13', category: 'mz', title: 'MZ 신조어 영역', description: '"오운완"의 뜻은?', options: ['오늘의 운세 완벽', '오늘 운동 완료', '오랜만에 운전 완료', '오전 운동 완료'], answer: '오늘 운동 완료' },
+  { id: 'mz14', category: 'mz', title: 'MZ 신조어 영역', description: '"캘박"의 뜻은?', options: ['캘린더 박제(일정 등록)', '캘리포니아 박씨', '캘리그라피 박람회', '캘린더 박살'], answer: '캘린더 박제 (일정을 달력에 저장함)' },
+  { id: 'mz15', category: 'mz', title: 'MZ 신조어 영역', description: '"당모치"의 올바른 뜻은?', options: ['당연히 모든 치킨은 옳다', '당장 모여 치킨 먹자', '당연히 모양은 치즈', '당분간 모임 취소'], answer: '당연히 모든 치킨은 옳다' },
+  { id: 'mz16', category: 'mz', title: 'MZ 신조어 영역', description: '"자만추"의 뜻은?', options: ['자신만만한 추억', '자장면 만두 추가', '자연스러운 만남 추구', '자고로 만남은 추워야'], answer: '자연스러운 만남 추구' },
 
-  // 피의 게임 두뇌 퀴즈
-  { id: 11, category: 'brain', question: "다음에 올 숫자는 무엇일까요? [ 1, 1, 2, 3, 5, 8, ? ]", answer: "13", explanation: "피보나치 수열입니다. 앞의 두 숫자를 더하면 다음 숫자가 됩니다. (5 + 8 = 13)" },
-  { id: 12, category: 'brain', question: "어느 달에는 28일이 있습니다. 그렇다면 30일이 있는 달은 1년에 몇 개일까요?", answer: "11개", explanation: "2월을 제외한 모든 달(11개)은 최소 30일 이상을 가지고 있습니다." },
-  { id: 13, category: 'brain', question: "뛰어가면서 치는 것은 무엇일까요?", answer: "심장", explanation: "달리기(뛰기)를 하면 심장이 강하게 뜁니다(칩니다)." },
-  { id: 14, category: 'brain', question: "할아버지, 아버지, 아들이 같이 낚시를 갔습니다. 각자 한 마리씩 잡았는데, 총 물고기는 2마리입니다. 어떻게 된 일일까요?", answer: "할아버지, 아버지, 아들 총 2명입니다.", explanation: "할아버지의 아들은 아버지이고, 그 아버지의 아들이 아들이므로 총 3세대가 모인 2명의 사람(아버지이자 아들인 사람)이 포함되어 있습니다." },
-  { id: 15, category: 'brain', question: "전진만 있고 후진은 없는 것은?", answer: "시간 (또는 나이)", explanation: "시간과 나이는 거꾸로 되돌릴 수 없습니다." },
-  { id: 16, category: 'brain', question: "문은 문인데 닫지 못하는 문은?", answer: "소문", explanation: "입에서 입으로 전해지는 소문은 닫을 수 없습니다." },
-  { id: 17, category: 'brain', question: "방 안에 초가 5개 켜져 있었습니다. 바람이 불어 2개가 꺼졌습니다. 다음 날 방에 남아있는 초는 몇 개일까요?", answer: "2개", explanation: "꺼지지 않은 3개는 다 타서 없어졌고, 바람에 꺼진 2개만 타다 남아있습니다." },
-  { id: 18, category: 'brain', question: "다음에 올 알파벳은? [ O, T, T, F, F, S, S, E, N, ? ]", answer: "T", explanation: "숫자 1부터 10까지의 영어 앞글자입니다. (One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten)" },
+  // 피의 게임 두뇌 퀴즈 (16개)
+  { id: 'br1', category: 'brain', title: '피의 게임 두뇌 영역', description: '5대의 기계가 5개의 장난감을 만드는데 5분이 걸린다. 100대의 기계가 100개의 장난감을 만드는데 몇 분이 걸릴까?', options: ['1분', '5분', '20분', '100분'], answer: '5분 (기계 1대가 장난감 1개를 만드는데 5분이 걸리므로)' },
+  { id: 'br2', category: 'brain', title: '피의 게임 두뇌 영역', description: '어떤 달은 31일이 있고, 어떤 달은 30일이 있다. 28일이 있는 달은 몇 개일까?', options: ['1개', '4개', '6개', '12개'], answer: '12개 (모든 달에는 최소 28일이 포함되어 있다)' },
+  { id: 'br3', category: 'brain', title: '피의 게임 두뇌 영역', description: '달리기 경주에서 2등을 추월했다. 당신은 지금 몇 등인가?', options: ['1등', '2등', '3등', '꼴찌'], answer: '2등 (2등의 자리를 빼앗았으므로)' },
+  { id: 'br4', category: 'brain', title: '피의 게임 두뇌 영역', description: '철수의 아빠에게는 3명의 아들이 있다. 첫째의 이름은 원, 둘째의 이름은 투 이다. 셋째의 이름은 무엇일까?', options: ['쓰리', '포', '철수', '모름'], answer: '철수' },
+  { id: 'br5', category: 'brain', title: '피의 게임 두뇌 영역', description: '1부터 100까지의 숫자 중에서 숫자 "8"은 총 몇 번 나올까?', options: ['10번', '11번', '19번', '20번'], answer: '20번 (8, 18.. 80, 81~89, 98. 특히 88은 두 번!)' },
+  { id: 'br6', category: 'brain', title: '피의 게임 두뇌 영역', description: '어제는 내일의 모레이다. 오늘은 무슨 요일인가? (문제가 논리적으로 성립하는 요일)', options: ['월요일', '수요일', '금요일', '말이 안 되는 문장이다'], answer: '말이 안 되는 문장이다 (어제는 내일의 모레가 될 수 없음)' },
+  { id: 'br7', category: 'brain', title: '피의 게임 두뇌 영역', description: 'A와 B가 체스를 5판 두었는데, 둘 다 3판씩 이겼다. 어떻게 가능할까?', options: ['둘 다 천재다', '무승부가 있었다', '서로 다른 사람과 두었다', '규칙을 어겼다'], answer: '서로 다른 사람과 체스를 두었다' },
+  { id: 'br8', category: 'brain', title: '피의 게임 두뇌 영역', description: '성냥개비 3개로 4를 만드는 가장 쉬운 방법은?', options: ['성냥을 부러뜨린다', '로마 숫자 IV를 만든다', '숫자 4모양을 만든다', '사각형을 만든다'], answer: '로마 숫자 IV를 만든다' },
+  { id: 'br9', category: 'brain', title: '피의 게임 두뇌 영역', description: '거울에 비친 아날로그 시계가 3시 15분을 가리키고 있다. 실제 시간은?', options: ['3시 15분', '8시 45분', '9시 15분', '2시 45분'], answer: '8시 45분' },
+  { id: 'br10', category: 'brain', title: '피의 게임 두뇌 영역', description: '비가 오는 날 기차 안에서 창밖을 보니 소가 엎드려 있었다. 왜 엎드려 있었을까?', options: ['피곤해서', '비 피하려고', '풀 먹으려고', '네 다리가 바닥에 닿아있으니까'], answer: '소가 서있는지 엎드려있는지는 다리 모양을 봐야 안다 (넌센스)' },
+  { id: 'br11', category: 'brain', title: '피의 게임 두뇌 영역', description: '앞에서 읽으나 뒤에서 읽으나 똑같은 단어가 아닌 것은?', options: ['기러기', '토마토', '우영우', '오디오'], answer: '오디오 (오디오 -> 오디오)' },
+  { id: 'br12', category: 'brain', title: '피의 게임 두뇌 영역', description: '10명의 사람이 방에 있다. 모두가 서로 한 번씩 악수를 한다면 총 악수 횟수는?', options: ['10번', '45번', '50번', '90번'], answer: '45번 (n(n-1)/2 공식을 적용)' },
+  { id: 'br13', category: 'brain', title: '피의 게임 두뇌 영역', description: '물고기 10마리가 어항에 있다. 2마리가 익사했고, 3마리가 헤엄쳐 도망갔고, 4마리가 죽었다. 어항에는 몇 마리가 남았을까?', options: ['1마리', '5마리', '6마리', '10마리'], answer: '10마리 (물고기는 익사할 수 없고 도망갈 곳도 없으며, 죽은 물고기도 어항 안에 있다)' },
+  { id: 'br14', category: 'brain', title: '피의 게임 두뇌 영역', description: '무게가 같은 동전 8개와 무거운 가짜 동전 1개가 있다. 양팔저울을 최소 몇 번 사용해야 가짜를 찾을 수 있을까?', options: ['2번', '3번', '4번', '8번'], answer: '2번 (3개씩 묶어 달아본다)' },
+  { id: 'br15', category: 'brain', title: '피의 게임 두뇌 영역', description: '아빠 개구리가 "개굴개굴", 엄마 개구리가 "개굴개굴" 운다. 아기 개구리는?', options: ['개굴개굴', '올챙이는 울지 않는다', '개굴', '안 운다'], answer: '올챙이는 울지 않는다' },
+  { id: 'br16', category: 'brain', title: '피의 게임 두뇌 영역', description: '눈이 녹으면 무엇이 될까?', options: ['물', '봄', '얼음', '눈물'], answer: '봄 (감성적인 정답)' },
 
-  // 극악의 밸런스 게임
-  { id: 21, category: 'balance', question: "당신의 선택은?", options: ["평생 양치 안 하고 살기 (대신 냄새 안남)", "평생 샤워 안 하고 살기 (대신 냄새 안남)"], answer: "통계 확인하기", explanation: "양치를 선택한 사람 45%, 샤워를 선택한 사람 55% (가상 통계)" },
-  { id: 22, category: 'balance', question: "당신의 선택은?", options: ["100억 받고 스마트폰 평생 금지", "그냥 지금처럼 살기"], answer: "통계 확인하기", explanation: "100억 선택 62%, 그냥 살기 선택 38%" },
-  { id: 23, category: 'balance', question: "어떤 초능력을 갖고 싶나요?", options: ["과거로 돌아가는 능력", "미래를 보는 능력"], answer: "통계 확인하기", explanation: "과거로 가기 48%, 미래 보기 52%" },
-  { id: 24, category: 'balance', question: "어떤 회사가 더 나은가요?", options: ["연봉 3천만원, 주 3일제 칼퇴", "연봉 1억원, 주 6일제 야근 필수"], answer: "통계 확인하기", explanation: "주 3일제 70%, 주 6일제 30%" },
-  { id: 25, category: 'balance', question: "더 견디기 힘든 상황은?", options: ["여름에 에어컨/선풍기 없이 살기", "겨울에 보일러/전기장판 없이 살기"], answer: "통계 확인하기", explanation: "여름 55%, 겨울 45%" },
-  { id: 26, category: 'balance', question: "더 소름 돋는 능력은?", options: ["다른 사람의 속마음이 다 들림", "다른 사람이 언제 죽는지 보임"], answer: "통계 확인하기", explanation: "속마음 들림 40%, 언제 죽는지 보임 60%" },
-  { id: 27, category: 'balance', question: "어떤 친구가 더 최악인가요?", options: ["돈 빌리고 안 갚는 친구", "내 뒷담화 하고 다니는 친구"], answer: "통계 확인하기", explanation: "돈 빌림 51%, 뒷담화 49%" },
-  { id: 28, category: 'balance', question: "하나만 먹고 살아야 한다면?", options: ["평생 치킨만 먹기", "평생 라면만 먹기"], answer: "통계 확인하기", explanation: "치킨 35%, 라면 65%" },
+  // 극악의 밸런스 게임 (16개)
+  { id: 'ba1', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나만 선택해야 한다면?', options: ['평생 양치 안 하기', '평생 샤워 안 하기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba2', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나를 겪어야 한다면?', options: ['10년 전 과거로 가서 다시 살기', '10년 후 미래로 훌쩍 건너뛰기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba3', category: 'balance', title: '극악의 밸런스 영역', description: '친구와 약속을 잡는다면?', options: ['매번 30분씩 지각하는 친구', '매번 30분 일찍 와서 재촉하는 친구'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba4', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나의 능력을 가질 수 있다면?', options: ['투명인간 되기', '순간이동 하기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba5', category: 'balance', title: '극악의 밸런스 영역', description: '요즘 더 스트레스 받는 상황은?', options: ['배터리 1%인데 충전기 없음', '와이파이 풀칸인데 인터넷 안 됨'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba6', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 평생 하나만 먹어야 한다면?', options: ['평생 밀가루 없이 살기', '평생 고기 없이 살기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba7', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나의 초능력을 가진다면?', options: ['과거의 나에게 10초 통화하기', '미래의 나에게 10초 통화하기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba8', category: 'balance', title: '극악의 밸런스 영역', description: '더 최악의 이별 통보는?', options: ['카톡으로 이별 통보받기', '환승 이별 당하기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba9', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나만 가능하다면?', options: ['평생 여름 (에어컨 있음)', '평생 겨울 (히터 있음)'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba10', category: 'balance', title: '극악의 밸런스 영역', description: '더 화나는 상황은?', options: ['내가 한 말 계속 까먹는 애인', '내 말에 매번 꼬투리 잡는 애인'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba11', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 평생 입어야 할 옷은?', options: ['한겨울에 반팔 입기', '한여름에 패딩 입기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba12', category: 'balance', title: '극악의 밸런스 영역', description: '환생한다면 무엇으로?', options: ['돈 많은 백수 고양이', '월 1000만 원 버는 직장인'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba13', category: 'balance', title: '극악의 밸런스 영역', description: '무인도에 한 가지만 가져간다면?', options: ['무한 배터리 스마트폰 (통신불가)', '생존 전문가 1명'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba14', category: 'balance', title: '극악의 밸런스 영역', description: '더 참을 수 없는 직장 동료는?', options: ['일은 잘하는데 성격 파탄자', '성격은 천사인데 일 못하는 민폐'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba15', category: 'balance', title: '극악의 밸런스 영역', description: '둘 중 하나를 포기해야 한다면?', options: ['평생 라면 끊기', '평생 치킨 끊기'], answer: '정답은 없습니다! 당신의 선택은?' },
+  { id: 'ba16', category: 'balance', title: '극악의 밸런스 영역', description: '만약 100억이 생긴다면?', options: ['아무에게도 안 알리고 숨어살기', '동네방네 자랑하고 유명해지기'], answer: '정답은 없습니다! 당신의 선택은?' },
 
-  // 피식 아재개그
-  { id: 31, category: 'joke', question: "세상에서 제일 가난한 왕은?", answer: "최저임금", explanation: "가장 낮은 임금을 의미하는 언어유희입니다." },
-  { id: 32, category: 'joke', question: "신발이 화나면?", answer: "신발끈", explanation: "화가 나서 '끈'(끝)이 났다는 의미입니다." },
-  { id: 33, category: 'joke', question: "아몬드가 죽으면?", answer: "다이아몬드", explanation: "죽다(Die) + 아몬드의 합성어입니다." },
-  { id: 34, category: 'joke', question: "세상에서 가장 뜨거운 바다는?", answer: "열바다", explanation: "'열받아'와 발음이 비슷한 언어유희입니다." },
-  { id: 35, category: 'joke', question: "바나나가 웃으면?", answer: "바나나킥", explanation: "과자 이름이기도 하며 웃음소리(킥킥)를 나타냅니다." },
-  { id: 36, category: 'joke', question: "차를 발로 차면?", answer: "카놀라유", explanation: "차(Car)가 놀라유(놀랐어요)의 사투리 표현입니다." },
-  { id: 37, category: 'joke', question: "소금의 유통기한은 언제까지일까?", answer: "천일염", explanation: "천 일(1000일) 염이라는 의미의 언어유희입니다." },
-  { id: 38, category: 'joke', question: "왕이 넘어지면?", answer: "킹콩", explanation: "왕(King)이 '콩'하고 넘어졌다는 뜻입니다." }
+  // 피식 아재개그 (16개)
+  { id: 'jo1', category: 'joke', title: '피식 아재개그', description: '왕이 넘어지면 뭐라고 할까?', answer: '킹콩' },
+  { id: 'jo2', category: 'joke', title: '피식 아재개그', description: '신발이 화가 나면?', answer: '신발끈' },
+  { id: 'jo3', category: 'joke', title: '피식 아재개그', description: '소나무가 삐지면?', answer: '칫솔' },
+  { id: 'jo4', category: 'joke', title: '피식 아재개그', description: '전화기로 세운 건물은?', answer: '콜로세움' },
+  { id: 'jo5', category: 'joke', title: '피식 아재개그', description: '우유가 넘어지면?', answer: '아야' },
+  { id: 'jo6', category: 'joke', title: '피식 아재개그', description: '딸기가 도망가면?', answer: '딸기쨈 (딸기가 째앰!)' },
+  { id: 'jo7', category: 'joke', title: '피식 아재개그', description: '소가 번개에 맞아 죽으면?', answer: '우적' },
+  { id: 'jo8', category: 'joke', title: '피식 아재개그', description: '바나나가 웃으면?', answer: '바나나킥' },
+  { id: 'jo9', category: 'joke', title: '피식 아재개그', description: '차를 발로 차면?', answer: '카톡' },
+  { id: 'jo10', category: 'joke', title: '피식 아재개그', description: '세상에서 가장 가난한 왕은?', answer: '최저임금' },
+  { id: 'jo11', category: 'joke', title: '피식 아재개그', description: '수박이 수영을 하면?', answer: '수박바' },
+  { id: 'jo12', category: 'joke', title: '피식 아재개그', description: '할아버지가 좋아하는 돈은?', answer: '할머니' },
+  { id: 'jo13', category: 'joke', title: '피식 아재개그', description: '오리가 얼어 죽으면?', answer: '언덕' },
+  { id: 'jo14', category: 'joke', title: '피식 아재개그', description: '화장실에서 나온 사람은?', answer: '일본사람 (볼일 본 사람)' },
+  { id: 'jo15', category: 'joke', title: '피식 아재개그', description: '사람이 죽지 않는 산맥은?', answer: '안데스 산맥' },
+  { id: 'jo16', category: 'joke', title: '피식 아재개그', description: '가장 억울한 도형은?', answer: '원통' }
 ];

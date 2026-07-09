@@ -9,12 +9,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
     }
 
-    // Insert a new log entry
-    // NOTE: This assumes the 'game_clicks' table exists in Supabase
+    // Insert a new log entry using the existing 'attendance_logs' table
+    // to avoid requiring the user to create a new SQL table manually.
     if (supabaseAdmin) {
       const { error } = await supabaseAdmin
-        .from('game_clicks')
-        .insert([{ category }]);
+        .from('attendance_logs')
+        .insert([{ 
+          band_id: 'SYSTEM_GAME_STATS', 
+          nickname: category 
+        }]);
         
       if (error) {
         console.error('Error logging game click:', error);

@@ -80,6 +80,8 @@ export default function SuperadminPage() {
       if (res.ok) {
         setIsAuthenticated(true);
         fetchBands(password, 0);
+        // 백그라운드에서 퀴즈 고갈 체크 로직 실행 (텔레그램 연동)
+        fetch('/api/check-content-status').catch(e => console.error(e));
       } else {
         setErrorMsg(data.error || '인증 실패');
         setIsLoading(false);

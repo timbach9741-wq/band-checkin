@@ -435,7 +435,7 @@ function CheckInContent() {
                 <span className="text-4xl mb-3 block">
                   {selectedCategory === 'mz' ? '😎' : selectedCategory === 'brain' ? '🧠' : selectedCategory === 'balance' ? '⚖️' : '🤣'}
                 </span>
-                <h4 className="text-xl md:text-2xl font-black text-white leading-snug break-keep">{activeContent.question}</h4>
+                <h4 className="text-xl md:text-2xl font-black text-white leading-snug break-keep">{activeContent.description}</h4>
               </div>
 
               {activeContent.options && !isRevealed && (
