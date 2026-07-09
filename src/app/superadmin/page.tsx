@@ -1,8 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function SuperadminPage() {
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = "👑 마스터 대시보드 - 총괄 관리";
+    }
+  }, []);
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');

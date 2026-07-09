@@ -26,6 +26,7 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin);
+      document.title = "🎁 출석체크 링크 생성기 - 무료 혜택 이벤트";
     }
   }, []);
 

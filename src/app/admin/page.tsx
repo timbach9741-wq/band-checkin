@@ -123,12 +123,16 @@ function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  // 자동 제출
+  // 자동 제출 및 브라우저 탭 이름 변경
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = `👑 ${bandName} 관리자`;
+    }
+    
     if (pin.length === 4 && !isAuthenticated) {
       handleVerifyPin();
     }
-  }, [pin]);
+  }, [pin, bandName, isAuthenticated]);
 
   if (!bandId) {
     return <div className="p-10 text-center text-red-500 font-bold">잘못된 접근입니다. (방 정보가 없습니다.)</div>;

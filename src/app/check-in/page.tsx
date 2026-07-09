@@ -174,6 +174,12 @@ function CheckInContent() {
 
   // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 불러옵니다.
   useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = `✅ ${bandTitle} 출석체크`;
+    }
+  }, [bandTitle]);
+
+  useEffect(() => {
     async function fetchTodayAttendees() {
       // 1. 목표 일수 및 플랫폼 설정, 글로벌 전광판 불러오기 (API)
       try {
