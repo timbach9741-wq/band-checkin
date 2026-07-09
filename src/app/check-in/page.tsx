@@ -4,12 +4,22 @@ import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
 
+const MOOD_OPTIONS = [
+  { id: 1, emoji: '☕', text: '나른한 오후 커피한잔', short: '커피한잔' },
+  { id: 2, emoji: '🍚', text: '점심 같이 먹을사람', short: '점심번개' },
+  { id: 3, emoji: '🍻', text: '낮술한잔', short: '낮술' },
+  { id: 4, emoji: '🍷', text: '앗싸 퇴근이다 술한잔 할사람', short: '퇴근술' }
+];
+
 function CheckInContent() {
   const searchParams = useSearchParams();
   const bandId = searchParams.get('band') || 'default';
   const [bandTitle, setBandTitle] = useState('오늘의 출석체크');
   
   const [nickname, setNickname] = useState('');
+  const [attendeeMoods, setAttendeeMoods] = useState<Record<string, number>>({});
+  const [myMood, setMyMood] = useState<number | null>(null);
+  const [isUpdatingMood, setIsUpdatingMood] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [streakDays, setStreakDays] = useState(1);
@@ -217,7 +227,25 @@ function CheckInContent() {
         
       if (data) {
         // 필터링: 환경설정 및 마커 제외
-        const validLogs = data.filter((log: any) => !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___MARQUEE:'));
+        const validLogs = data.filter((log: any) => !log.nickname.startsWith('___TARGET:') && !log.nickname.startsWith('___CONFIG:') && !log.nickname.startsWith('___MARQUEE:') && !log.nickname.startsWith('___STATUS:'));
+        
+        // 상태 추출 (오늘 등록된 가장 최신 상태만 유지)
+        const statusLogs = data.filter((log: any) => log.nickname.startsWith('___STATUS:') && new Date(log.created_at).getTime() >= todayStart.getTime());
+        statusLogs.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const moodMap: Record<string, number> = {};
+        statusLogs.forEach((log: any) => {
+          const parts = log.nickname.split(':');
+          if (parts.length === 3) {
+            moodMap[parts[1]] = parseInt(parts[2], 10);
+          }
+        });
+        setAttendeeMoods(moodMap);
+
+        // myMood 초기화 (로컬 스토리지에 닉네임이 있다면)
+        const savedNickname = localStorage.getItem('checkin_nickname');
+        if (savedNickname && moodMap[savedNickname]) {
+          setMyMood(moodMap[savedNickname]);
+        }
         
         // 닉네임별 이번 달 총 출석 횟수 계산
         const streakMap = new Map<string, number>();
@@ -243,6 +271,25 @@ function CheckInContent() {
     }
     fetchTodayAttendees();
   }, [bandId]);
+
+  const handleUpdateMood = async (moodId: number) => {
+    if (!nickname) return;
+    setIsUpdatingMood(true);
+    try {
+      const res = await fetch('/api/check-in/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bandId, nickname, statusIndex: moodId })
+      });
+      if (!res.ok) throw new Error('상태 업데이트 실패');
+      setMyMood(moodId);
+      setAttendeeMoods(prev => ({ ...prev, [nickname]: moodId }));
+    } catch (e) {
+      alert('상태 업데이트에 실패했습니다.');
+    } finally {
+      setIsUpdatingMood(false);
+    }
+  };
 
   const handleCheckIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -370,12 +417,36 @@ function CheckInContent() {
             </form>
           ) : (
             // 출석 완료 시 성공 메시지
-            <div className="bg-gradient-to-br from-emerald-400/20 to-teal-500/20 text-emerald-100 p-6 md:p-8 rounded-2xl text-center animate-in zoom-in duration-300 border border-emerald-400/30 relative z-10 backdrop-blur-md shadow-[0_0_30px_rgba(52,211,153,0.2)]">
-              <div className="text-5xl md:text-6xl mb-4 animate-bounce">🎉</div>
-              <h3 className="font-extrabold text-2xl md:text-3xl text-white drop-shadow-md">출석이 완료되었습니다!</h3>
-              <p className="text-lg md:text-xl mt-3 text-emerald-200 font-medium">
-                {new Date().getMonth() + 1}월 누적 <span className="font-black bg-emerald-500 text-white px-4 py-1.5 rounded-lg mx-1 shadow-lg shadow-emerald-500/50">{streakDays}일째</span> 출석입니다!
-              </p>
+            <div className="flex flex-col gap-4 relative z-10">
+              <div className="bg-gradient-to-br from-emerald-400/20 to-teal-500/20 text-emerald-100 p-6 md:p-8 rounded-2xl text-center animate-in zoom-in duration-300 border border-emerald-400/30 backdrop-blur-md shadow-[0_0_30px_rgba(52,211,153,0.2)]">
+                <div className="text-5xl md:text-6xl mb-4 animate-bounce">🎉</div>
+                <h3 className="font-extrabold text-2xl md:text-3xl text-white drop-shadow-md">출석이 완료되었습니다!</h3>
+                <p className="text-lg md:text-xl mt-3 text-emerald-200 font-medium">
+                  {new Date().getMonth() + 1}월 누적 <span className="font-black bg-emerald-500 text-white px-4 py-1.5 rounded-lg mx-1 shadow-lg shadow-emerald-500/50">{streakDays}일째</span> 출석입니다!
+                </p>
+              </div>
+              
+              {/* 기분/상태 선택 UI */}
+              <div className="p-5 md:p-6 bg-white/5 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-bottom-4 shadow-lg backdrop-blur-sm">
+                <h3 className="text-sm md:text-base font-bold text-indigo-200 mb-4 text-center">지금 내 상태나 기분을 자유롭게 알려주세요! 👇</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {MOOD_OPTIONS.map(mood => (
+                    <button
+                      key={mood.id}
+                      disabled={isUpdatingMood}
+                      onClick={() => handleUpdateMood(mood.id)}
+                      className={`p-3 md:p-4 rounded-xl text-sm md:text-base font-bold transition-all text-left flex items-center gap-3 ${
+                        myMood === mood.id 
+                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)] border border-pink-400 scale-[1.02]' 
+                          : 'bg-white/10 text-white hover:bg-white/20 border border-transparent hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-2xl drop-shadow-sm">{mood.emoji}</span>
+                      <span className="leading-tight">{mood.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -483,13 +554,30 @@ function CheckInContent() {
         </div>
 
         {/* 출석자 명단 리스트 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20">
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20 mt-8">
+          <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
             <h3 className="font-extrabold text-xl md:text-2xl text-white drop-shadow-sm">🏆 오늘의 출석 멤버</h3>
             <span className="text-base md:text-lg font-black text-pink-300 bg-pink-900/40 border border-pink-500/30 px-4 py-1.5 rounded-full shadow-inner">
               총 {attendees.length}명
             </span>
           </div>
+
+          {/* 기분/상태 통계 요약 (오늘의 멤버들의 상태) */}
+          {Object.keys(attendeeMoods).length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-5 mb-2 scrollbar-hide">
+              {MOOD_OPTIONS.map(mood => {
+                const count = Object.values(attendeeMoods).filter(m => m === mood.id).length;
+                if (count === 0) return null;
+                return (
+                  <div key={mood.id} className="bg-indigo-900/50 border border-indigo-500/30 px-3 py-1.5 rounded-full text-xs font-bold text-indigo-200 whitespace-nowrap flex items-center gap-1.5 shadow-sm">
+                    <span className="text-sm">{mood.emoji}</span>
+                    <span>{mood.short}</span>
+                    <span className="text-white bg-pink-500 px-1.5 py-0.5 rounded-full text-[10px]">{count}명</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           
           <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4 style-scroll">
             <ul className="space-y-4">
@@ -497,8 +585,14 @@ function CheckInContent() {
                 <li key={user.id} className="flex justify-between items-center bg-white/5 hover:bg-white/10 transition-colors px-5 py-4 md:py-5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300 border border-white/5">
                   <div className="flex items-center space-x-4">
                     <span className="text-purple-300 text-base md:text-lg font-black w-6 text-center">{attendees.length - index}</span>
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg border border-white/20">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg border border-white/20 relative">
                       {user.name.charAt(0)}
+                      {/* 상태 뱃지 */}
+                      {attendeeMoods[user.name] && (
+                        <div className="absolute -bottom-1 -right-1 bg-slate-800 rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md border-2 border-slate-700 animate-in zoom-in duration-300">
+                          {MOOD_OPTIONS.find(m => m.id === attendeeMoods[user.name])?.emoji}
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
