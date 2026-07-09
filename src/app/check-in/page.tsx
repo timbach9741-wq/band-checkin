@@ -3,6 +3,7 @@
 import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
+import { dailyContents, DailyContent } from '../../data/dailyContents';
 
 const MOOD_OPTIONS = [
   { id: 1, emoji: '☕', text: '나른한 오후, 커피 한 잔', short: '커피 한 잔' },
@@ -37,149 +38,31 @@ function CheckInContent() {
   const ELEVENST_URL = 'https://bitl.bz/04CdRt'; // 2. 11번가 (운세용)
   const EMART_URL = 'https://bitl.bz/ZDWuPt'; // 3. SSG (로또용)
 
-  // 자체 로또 번호 생성기 상태
-  const [lottoNumbers, setLottoNumbers] = useState<number[]>([]);
-  const [bonusNumber, setBonusNumber] = useState<number | null>(null);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [isBonusSpinning, setIsBonusSpinning] = useState(false);
+  // 매일 즐길거리 (Daily Entertainment) 상태
+  const [selectedCategory, setSelectedCategory] = useState<'mz' | 'brain' | 'balance' | 'joke' | null>(null);
+  const [activeContent, setActiveContent] = useState<DailyContent | null>(null);
+  const [isRevealed, setIsRevealed] = useState(false);
 
-  // 자체 운세 생성기 상태
-  const [fortune, setFortune] = useState<string | null>(null);
-
-  const generateFortune = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // 1. 화이트햇 방식: 11번가 스폰서 새 창 띄우기
-    window.open(ELEVENST_URL, '_blank');
-    
-    // 2. 쫄깃한 운세 생성 로직 (1.5초 로딩 후 결과 출력)
-    setFortune("🔮 우주의 기운을 모아 오늘의 운세를 풀이하는 중...");
-    
-    const parts1 = [
-      "상쾌한 에너지가 맴도는 오늘,",
-      "예상치 못한 두근거림이 기다리는 오늘,",
-      "평온하고 안정적인 기운이 가득한 오늘,",
-      "무언가 새로운 일을 시작하기 딱 좋은 오늘,",
-      "그동안의 노력이 빛을 발하기 시작하는 오늘,",
-      "주변 사람들의 따뜻한 시선이 집중되는 오늘,",
-      "우주의 긍정적인 기운이 당신을 향하는 오늘,",
-      "아침부터 왠지 모르게 기분이 상쾌한 오늘,",
-      "막혔던 고민이 서서히 풀려가는 오늘,",
-      "뜻밖의 행운이 당신의 문을 두드리는 오늘,"
-    ];
-    
-    const parts2 = [
-      "오랫동안 연락 끊겼던 지인에게 반가운 소식을 듣게 되거나,",
-      "평소 바랐던 작은 소망 하나가 마법처럼 이루어지며,",
-      "우연히 들른 곳에서 뜻밖의 이득을 얻게 되어,",
-      "직장이나 모임에서 당신의 능력을 크게 인정받아,",
-      "기다리던 반가운 택배나 선물이 도착하여,",
-      "사소한 오해가 풀리고 인간관계가 더욱 돈독해지며,",
-      "복권이나 경품 응모에서 작은 당첨의 기쁨을 누리게 되어,",
-      "평소 눈여겨보던 물건을 아주 좋은 조건에 얻게 되어,",
-      "가족이나 소중한 사람과 잊지 못할 행복한 추억을 만들게 되어,",
-      "우연한 기회에 큰 도움이 될 귀인을 만나게 되어,"
-    ];
-
-    const parts3 = [
-      "하루 종일 입가에 미소가 번질 완벽한 길일입니다!",
-      "금전운과 애정운이 동시에 상승하는 기분 좋은 하루가 될 것입니다.",
-      "마음의 평화와 안정을 찾는 아주 뜻깊은 하루가 예상됩니다.",
-      "당신의 매력이 200% 발산되는 화려한 하루가 될 것입니다.",
-      "저녁 즈음에 잊지 못할 짜릿한 이벤트를 경험하게 될 운세입니다.",
-      "어디를 가든 행운이 그림자처럼 따라다니는 멋진 날입니다.",
-      "오늘 하루만큼은 당신이 세상의 주인공이 될 것입니다!",
-      "지친 일상에 큰 활력소가 될 에너지가 충전되는 하루입니다.",
-      "새로운 도전을 하기에 이보다 더 완벽할 수 없는 날입니다.",
-      "마무리까지 모든 것이 순조로운, 그야말로 운수 대통인 하루입니다!"
-    ];
-
-    const colors = ["레드 🔴", "블루 🔵", "옐로우 🟡", "핑크 🌸", "퍼플 🟣", "그린 🟢", "오렌지 🟠", "네이비 🌌", "블랙 🌑", "화이트 ⚪"];
-    
-    setTimeout(() => {
-      const p1 = parts1[Math.floor(Math.random() * parts1.length)];
-      const p2 = parts2[Math.floor(Math.random() * parts2.length)];
-      const p3 = parts3[Math.floor(Math.random() * parts3.length)];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const number = Math.floor(Math.random() * 99) + 1;
-      
-      setFortune(`${p1} ${p2} ${p3}\n\n🎨 행운의 색상: ${color}\n🔢 행운의 숫자: ${number}`);
-    }, 1500);
+  const handleSelectCategory = (category: 'mz' | 'brain' | 'balance' | 'joke') => {
+    const categoryContents = dailyContents.filter(c => c.category === category);
+    const randomContent = categoryContents[Math.floor(Math.random() * categoryContents.length)];
+    setActiveContent(randomContent);
+    setSelectedCategory(category);
+    setIsRevealed(false);
   };
 
-  const generateLotto = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isSpinning || isBonusSpinning) return;
-
-    // 1. 화이트햇 방식: 유저 눈에 보이게 이마트몰 새 창 띄우기
-    window.open(EMART_URL, '_blank');
-
-    setIsSpinning(true);
-    setIsBonusSpinning(true);
-    setLottoNumbers([]); 
-    setBonusNumber(null);
-
-    // 역대 당첨 데이터 패턴을 분석한 현실적인 로또 생성기 알고리즘
-    const generateRealisticNumbers = () => {
-      let temp = new Set<number>();
-      let isValid = false;
-      while (!isValid) {
-        temp.clear();
-        while (temp.size < 6) temp.add(Math.floor(Math.random() * 45) + 1);
-        const arr = Array.from(temp);
-        
-        // 1. 번호 총합 검사
-        const sum = arr.reduce((a, b) => a + b, 0);
-        // 2. 홀짝 비율 검사 
-        const odds = arr.filter(n => n % 2 !== 0).length;
-        
-        if (sum >= 100 && sum <= 170 && odds >= 2 && odds <= 4) {
-          isValid = true;
-        }
-      }
-      
-      // 보너스 번호 1개 추가 (기존 6개와 겹치지 않게)
-      let bonus = Math.floor(Math.random() * 45) + 1;
-      while(temp.has(bonus)) {
-        bonus = Math.floor(Math.random() * 45) + 1;
-      }
-      
-      return { main: Array.from(temp).sort((a, b) => a - b), bonus };
-    };
-
-    // 2. 룰렛 애니메이션: 1.5초 뒤 6개 정지, 보너스 번호는 1초 더 돌다가 짠!
-    let count = 0;
-    const interval = setInterval(() => {
-      // 6개 번호와 보너스 번호 모두 미친듯이 돌아감
-      const temp = new Set<number>();
-      while (temp.size < 7) temp.add(Math.floor(Math.random() * 45) + 1);
-      const arr = Array.from(temp);
-      setLottoNumbers(arr.slice(0, 6));
-      setBonusNumber(arr[6]);
-      
-      count++;
-      if (count > 15) { // 1.5초 뒤 6개 메인 번호 정지
-        clearInterval(interval);
-        
-        const finalData = generateRealisticNumbers();
-        setLottoNumbers(finalData.main);
-        setIsSpinning(false);
-        
-        // 보너스 번호만 단독으로 1초 더 돌아가는 쫄깃한 연출
-        let bonusCount = 0;
-        const bonusInterval = setInterval(() => {
-          let rand = Math.floor(Math.random() * 45) + 1;
-          setBonusNumber(rand);
-          bonusCount++;
-          
-          if (bonusCount > 10) { // 1초 뒤 정지
-            clearInterval(bonusInterval);
-            setBonusNumber(finalData.bonus);
-            setIsBonusSpinning(false);
-          }
-        }, 100);
-      }
-    }, 100);
+  const handleRevealAnswer = () => {
+    // 50 / 25 / 25 스폰서 쿠키 드랍 로직
+    const rand = Math.random();
+    let sponsorUrl = COUPANG_URL; // 50%
+    if (rand > 0.5 && rand <= 0.75) sponsorUrl = ELEVENST_URL; // 25%
+    else if (rand > 0.75) sponsorUrl = EMART_URL; // 25%
+    
+    // 새 창으로 스폰서 링크 팝업 (쿠키 심기)
+    window.open(sponsorUrl, '_blank');
+    
+    // 현재 창에서는 정답 공개
+    setIsRevealed(true);
   };
 
   // 페이지가 로드될 때 '오늘의 출석 멤버' 데이터와 밴드 설정값을 불러옵니다.
@@ -493,99 +376,83 @@ function CheckInContent() {
           </div>
         </div>
 
-        {/* 제휴 콘텐츠 / 쿠키 드랍 배너 영역 */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20 flex flex-col gap-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-extrabold text-lg md:text-xl text-white drop-shadow-sm">🎁 매일매일 새로운 즐길거리</h3>
+        {/* 매일매일 새로운 즐길거리 (메뉴 & 콘텐츠) */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20 mt-8 flex flex-col gap-5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-xl md:text-2xl text-white drop-shadow-sm">🎁 매일매일 새로운 즐길거리</h3>
             <span className="text-xs font-black text-purple-900 bg-pink-300 px-2 py-1 rounded-md shadow-sm">AD</span>
           </div>
-          
-          <div className="w-full bg-gradient-to-r from-indigo-500/40 to-blue-500/40 border border-white/10 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
-            <button 
-              onClick={generateFortune}
-              className="w-full text-white py-2 font-bold flex justify-between items-center px-2 transition-all transform hover:scale-[1.02]"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-3xl md:text-4xl drop-shadow-md">🔮</span>
-                <div className="flex flex-col items-start">
-                  <span className="text-base md:text-lg font-black tracking-wide">오늘의 무료 운세 보기</span>
-                  <span className="text-xs text-indigo-200 mt-0.5">11번가 스폰서 구경하고 운세 확인</span>
-                </div>
-              </div>
-              <span className="text-white/50 text-xl font-black">▶</span>
-            </button>
-            
-            {/* 자체 운세 결과창 */}
-            {fortune && (
-              <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2 duration-500">
-                <div className={`p-4 rounded-xl text-center font-bold text-base md:text-lg shadow-inner whitespace-pre-wrap leading-relaxed ${
-                  fortune.includes("풀이하는 중") 
-                    ? "bg-black/20 text-indigo-200 animate-pulse" 
-                    : "bg-indigo-900/50 text-white border border-indigo-400/30"
-                }`}>
-                  {fortune}
-                </div>
-              </div>
-            )}
-          </div>
 
-          <div className="w-full bg-gradient-to-r from-rose-500/40 to-orange-500/40 border border-white/10 rounded-2xl p-4 shadow-lg backdrop-blur-sm">
-            <button 
-              onClick={generateLotto}
-              disabled={isSpinning}
-              className="w-full text-white py-2 font-bold flex justify-between items-center px-2 transition-all transform hover:scale-[1.02]"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-3xl md:text-4xl drop-shadow-md">🎯</span>
-                <span className="text-base md:text-lg font-black tracking-wide text-left flex flex-col">
-                  <span>이번 주 행운의 로또 번호 뽑기</span>
-                  <span className="text-xs text-orange-200 font-normal mt-0.5">이마트몰 스폰서 구경하고 번호 생성</span>
+          {!selectedCategory ? (
+            // 카테고리 선택 메뉴 (2x2 그리드)
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-2">
+              <button onClick={() => handleSelectCategory('mz')} className="bg-gradient-to-br from-indigo-500/80 to-blue-600/80 hover:from-indigo-400 hover:to-blue-500 p-4 md:p-5 rounded-2xl border border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                <span className="text-3xl md:text-4xl drop-shadow-md">😎</span>
+                <span className="text-white font-bold text-sm md:text-base">MZ 신조어 퀴즈</span>
+              </button>
+              <button onClick={() => handleSelectCategory('brain')} className="bg-gradient-to-br from-purple-500/80 to-pink-600/80 hover:from-purple-400 hover:to-pink-500 p-4 md:p-5 rounded-2xl border border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                <span className="text-3xl md:text-4xl drop-shadow-md">🧠</span>
+                <span className="text-white font-bold text-sm md:text-base">피의 게임 두뇌 퀴즈</span>
+              </button>
+              <button onClick={() => handleSelectCategory('balance')} className="bg-gradient-to-br from-rose-500/80 to-orange-600/80 hover:from-rose-400 hover:to-orange-500 p-4 md:p-5 rounded-2xl border border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                <span className="text-3xl md:text-4xl drop-shadow-md">⚖️</span>
+                <span className="text-white font-bold text-sm md:text-base">극악의 밸런스 게임</span>
+              </button>
+              <button onClick={() => handleSelectCategory('joke')} className="bg-gradient-to-br from-teal-500/80 to-emerald-600/80 hover:from-teal-400 hover:to-emerald-500 p-4 md:p-5 rounded-2xl border border-white/20 shadow-lg flex flex-col items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                <span className="text-3xl md:text-4xl drop-shadow-md">🤣</span>
+                <span className="text-white font-bold text-sm md:text-base">피식 아재개그</span>
+              </button>
+            </div>
+          ) : activeContent ? (
+            // 게임 플레이 화면
+            <div className="bg-black/20 rounded-2xl p-5 border border-white/10 animate-in fade-in slide-in-from-right-4 relative">
+              <button onClick={() => setSelectedCategory(null)} className="absolute top-4 right-4 text-white/50 hover:text-white text-sm bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 transition-colors">돌아가기</button>
+              
+              <div className="text-center mb-6 mt-4">
+                <span className="text-4xl mb-3 block">
+                  {selectedCategory === 'mz' ? '😎' : selectedCategory === 'brain' ? '🧠' : selectedCategory === 'balance' ? '⚖️' : '🤣'}
                 </span>
+                <h4 className="text-xl md:text-2xl font-black text-white leading-snug break-keep">{activeContent.question}</h4>
               </div>
-              <span className="text-white/50 text-xl font-black">▶</span>
-            </button>
-            
-            {/* 자체 로또 번호 결과창 */}
-            {(lottoNumbers.length > 0 || isSpinning) && (
-              <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap justify-center items-center gap-2">
-                {lottoNumbers.map((num, i) => {
-                  let bgColor = "bg-yellow-400 text-yellow-900"; 
-                  if (num > 10) bgColor = "bg-blue-400 text-blue-900"; 
-                  if (num > 20) bgColor = "bg-red-400 text-red-900"; 
-                  if (num > 30) bgColor = "bg-gray-400 text-gray-900"; 
-                  if (num > 40) bgColor = "bg-green-400 text-green-900"; 
-                  
-                  return (
-                    <div 
-                      key={i} 
-                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-lg md:text-xl shadow-[0_0_15px_rgba(255,255,255,0.3)] border-2 border-white/20 transform transition-all ${bgColor} ${isSpinning ? 'animate-ping duration-75' : 'animate-bounce'}`}
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                    >
-                      {num}
-                    </div>
-                  );
-                })}
 
-                {/* 마지막 보너스 번호 연출 */}
-                {bonusNumber !== null && (
-                  <>
-                    <span className="text-white font-black text-2xl mx-1">+</span>
-                    <div 
-                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-lg md:text-xl shadow-[0_0_20px_rgba(236,72,153,0.5)] border-2 border-pink-400 transform transition-all ${
-                        bonusNumber > 40 ? "bg-green-400 text-green-900" :
-                        bonusNumber > 30 ? "bg-gray-400 text-gray-900" :
-                        bonusNumber > 20 ? "bg-red-400 text-red-900" :
-                        bonusNumber > 10 ? "bg-blue-400 text-blue-900" :
-                        "bg-yellow-400 text-yellow-900"
-                      } ${isBonusSpinning ? 'animate-ping duration-75 opacity-50' : 'animate-bounce scale-110 ring-4 ring-pink-500/50'}`}
-                    >
-                      {bonusNumber}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+              {activeContent.options && !isRevealed && (
+                <div className="flex flex-col gap-2 mb-4">
+                  {activeContent.options.map((opt: string, idx: number) => (
+                    <button key={idx} onClick={handleRevealAnswer} className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-4 rounded-xl text-left border border-white/5 transition-colors">
+                      {idx + 1}. {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {!isRevealed && (
+                <button 
+                  onClick={handleRevealAnswer}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-black py-4 rounded-xl shadow-[0_4px_15px_rgba(236,72,153,0.4)] border border-pink-400/50 mt-2 text-lg animate-pulse"
+                >
+                  👉 정답 및 {selectedCategory === 'balance' ? '통계' : '해설'} 보기
+                </button>
+              )}
+
+              {isRevealed && (
+                <div className="mt-4 p-5 bg-gradient-to-br from-indigo-900/80 to-purple-900/80 rounded-xl border border-indigo-400/30 animate-in fade-in zoom-in duration-300 shadow-inner">
+                  <h5 className="text-pink-300 font-bold text-sm mb-1">{selectedCategory === 'balance' ? '📊 다른 사람들의 선택' : '💡 정답'}</h5>
+                  <p className="text-white font-black text-xl mb-3">{activeContent.answer}</p>
+                  
+                  {activeContent.explanation && (
+                    <>
+                      <div className="h-px w-full bg-white/10 my-4"></div>
+                      <p className="text-indigo-200 text-sm leading-relaxed">{activeContent.explanation}</p>
+                    </>
+                  )}
+                  
+                  <button onClick={() => handleSelectCategory(selectedCategory)} className="mt-6 w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-lg font-bold border border-white/10 transition-colors shadow-sm">
+                    새로운 문제 풀기 🔄
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* 출석자 명단 리스트 */}
