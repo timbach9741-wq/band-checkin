@@ -8,6 +8,7 @@ function AdminDashboard() {
   const searchParams = useSearchParams();
   const bandId = searchParams.get('band');
   const [bandName, setBandName] = useState(bandId ? bandId.split('-').slice(0, -1).join(' ') : '방');
+  const [totalMembers, setTotalMembers] = useState(0);
   
   const [pin, setPin] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -37,6 +38,9 @@ function AdminDashboard() {
         setIsAuthenticated(true);
         if (data.bandName) {
           setBandName(data.bandName);
+        }
+        if (data.totalMembers) {
+          setTotalMembers(data.totalMembers);
         }
         fetchStats();
       } else {
@@ -158,6 +162,24 @@ function AdminDashboard() {
   }
 
   // 관리자 대시보드 UI (인증 성공)
+  const winnersCount = stats.filter(s => s.days >= 20).length;
+  const currentRate = totalMembers > 0 ? Math.floor((winnersCount / totalMembers) * 100) : 0;
+  
+  let rewardTitle = '목표 미달성 (커피 지급 불가)';
+  let rewardDesc = `현재 당첨자 비율: ${currentRate}% (목표 60%)`;
+  let isRewardSuccess = false;
+
+  if (totalMembers > 0) {
+    if (totalMembers <= 30) {
+      if (currentRate >= 60) { isRewardSuccess = true; rewardTitle = '🎉 커피 1잔 확보 성공!'; }
+    } else if (totalMembers <= 50) {
+      if (currentRate >= 60) { isRewardSuccess = true; rewardTitle = '🎉 커피 3잔 확보 성공!'; }
+    } else {
+      if (currentRate >= 60) { isRewardSuccess = true; rewardTitle = '🎉 커피 5잔 확보 성공!'; }
+      else if (winnersCount >= 30) { isRewardSuccess = true; rewardTitle = '🎉 커피 5잔 확보 성공!'; rewardDesc = '출석 30명 달성 보너스!'; }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
       <header className="bg-white shadow-sm border-b border-slate-200 px-4 py-5 mb-8 sticky top-0 z-10 flex justify-between items-center">
@@ -165,6 +187,16 @@ function AdminDashboard() {
       </header>
 
       <main className="max-w-4xl mx-auto p-4 space-y-6">
+        {totalMembers > 0 && (
+          <div className={`p-6 rounded-2xl shadow-sm border ${isRewardSuccess ? 'bg-yellow-50 border-yellow-300' : 'bg-slate-100 border-slate-300'}`}>
+            <h2 className={`text-xl font-black mb-2 ${isRewardSuccess ? 'text-yellow-800' : 'text-slate-600'}`}>{rewardTitle}</h2>
+            <p className={`font-bold ${isRewardSuccess ? 'text-yellow-700' : 'text-slate-500'}`}>{rewardDesc}</p>
+            {!isRewardSuccess && (
+              <p className="text-sm mt-2 text-slate-400 font-medium">※ 전체 인원({totalMembers}명)의 60% 이상이 20일 출석을 완료해야 방장님께 운영 지원용 기프티콘이 지급됩니다.</p>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-sm font-bold text-slate-500 mb-1">현재 출석 인원</h3>
