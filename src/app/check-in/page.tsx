@@ -5,10 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
 
 const MOOD_OPTIONS = [
-  { id: 1, emoji: '☕', text: '나른한 오후 커피한잔', short: '커피한잔' },
-  { id: 2, emoji: '🍚', text: '점심 같이 먹을사람', short: '점심번개' },
-  { id: 3, emoji: '🍻', text: '낮술한잔', short: '낮술' },
-  { id: 4, emoji: '🍷', text: '앗싸 퇴근이다 술한잔 할사람', short: '퇴근술' }
+  { id: 1, emoji: '☕', text: '나른한 오후, 커피 한 잔', short: '커피 한 잔' },
+  { id: 2, emoji: '🍚', text: '점심 같이 먹을 사람', short: '점심 번개' },
+  { id: 3, emoji: '🍻', text: '낮술 한 잔', short: '낮술' },
+  { id: 4, emoji: '🍷', text: '앗싸 퇴근이다! 술 한 잔 할 사람', short: '퇴근술' }
 ];
 
 function CheckInContent() {
