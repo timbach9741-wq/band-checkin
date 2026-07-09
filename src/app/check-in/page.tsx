@@ -446,22 +446,33 @@ function CheckInContent() {
               </div>
               
               {/* 기분/상태 선택 UI */}
-              <div className="p-5 md:p-6 bg-white/5 rounded-2xl border border-white/10 animate-in fade-in slide-in-from-bottom-4 shadow-lg backdrop-blur-sm">
-                <h3 className="text-sm md:text-base font-bold text-indigo-200 mb-4 text-center">지금 내 상태나 기분을 자유롭게 알려주세요! 👇</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-6 md:p-8 bg-gradient-to-br from-white/10 to-white/5 rounded-3xl border border-white/20 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <h3 className="text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-indigo-200 mb-5 text-center flex items-center justify-center gap-2">
+                  <span>지금 내 상태나 기분을 자유롭게 알려주세요!</span>
+                  <span className="text-xl animate-bounce">👇</span>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 relative z-10">
                   {MOOD_OPTIONS.map(mood => (
                     <button
                       key={mood.id}
                       disabled={isUpdatingMood}
                       onClick={() => handleUpdateMood(mood.id)}
-                      className={`p-3 md:p-4 rounded-xl text-sm md:text-base font-bold transition-all text-left flex items-center gap-3 ${
+                      className={`p-3 md:p-4 rounded-2xl text-sm md:text-base font-bold transition-all duration-300 text-left flex items-center gap-4 ${
                         myMood === mood.id 
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_15px_rgba(236,72,153,0.5)] border border-pink-400 scale-[1.02]' 
-                          : 'bg-white/10 text-white hover:bg-white/20 border border-transparent hover:border-white/20'
+                          ? 'bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-[0_8px_30px_rgba(236,72,153,0.5)] border border-pink-400 scale-[1.03] ring-2 ring-pink-300/50' 
+                          : 'bg-white/5 text-purple-100 hover:bg-white/15 hover:text-white border border-white/10 hover:border-white/30 hover:shadow-[0_8px_20px_rgba(255,255,255,0.05)] hover:-translate-y-1'
                       }`}
                     >
-                      <span className="text-2xl drop-shadow-sm">{mood.emoji}</span>
-                      <span className="leading-tight">{mood.text}</span>
+                      <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl shadow-inner text-2xl transition-colors ${
+                         myMood === mood.id ? 'bg-white/20 border border-white/30' : 'bg-black/20 border border-white/5'
+                      }`}>
+                        <span className="drop-shadow-md">{mood.emoji}</span>
+                      </div>
+                      <span className="leading-tight tracking-wide flex-1">{mood.text}</span>
+                      {myMood === mood.id && (
+                        <div className="w-2 h-2 bg-white rounded-full flex-shrink-0 animate-pulse shadow-[0_0_10px_white]"></div>
+                      )}
                     </button>
                   ))}
                 </div>
