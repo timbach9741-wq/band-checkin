@@ -42,6 +42,15 @@ function CheckInContent() {
   const [selectedCategory, setSelectedCategory] = useState<'mz' | 'brain' | 'balance' | 'joke' | null>(null);
   const [activeContent, setActiveContent] = useState<DailyContent | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [sponsorMapping, setSponsorMapping] = useState<Record<string, string> | null>(null);
+
+  // 컴포넌트 마운트 시 동적 스폰서 맵핑 데이터 로드
+  useEffect(() => {
+    fetch('/api/game-sponsors')
+      .then(res => res.json())
+      .then(data => setSponsorMapping(data))
+      .catch(err => console.error('Failed to load sponsor mapping:', err));
+  }, []);
 
   const handleSelectCategory = (category: 'mz' | 'brain' | 'balance' | 'joke') => {
     const categoryContents = dailyContents.filter(c => c.category === category);
@@ -52,22 +61,28 @@ function CheckInContent() {
   };
 
   const handleRevealAnswer = () => {
-    // 게임 카테고리별 스폰서 고정 배분 (쿠팡 구매율이 높으므로 인기 게임 2개에 쿠팡 배정)
-    // MZ 퀴즈, 밸런스 게임 -> 쿠팡 (50%)
-    // 두뇌 퀴즈 -> 11번가 (25%)
-    // 아재개그 -> 이마트몰 (25%)
-    let sponsorUrl = COUPANG_URL;
+    if (!selectedCategory) return;
     
-    if (selectedCategory === 'mz' || selectedCategory === 'balance') {
-      sponsorUrl = COUPANG_URL;
-    } else if (selectedCategory === 'brain') {
-      sponsorUrl = ELEVENST_URL;
-    } else if (selectedCategory === 'joke') {
-      sponsorUrl = EMART_URL;
+    // 통계 기반 동적 스폰서 URL 사용 (기본값 설정)
+    let sponsorUrl = COUPANG_URL;
+    if (sponsorMapping && sponsorMapping[selectedCategory]) {
+      sponsorUrl = sponsorMapping[selectedCategory];
+    } else {
+      // API 응답 전이거나 실패 시 기본 로직 
+      if (selectedCategory === 'mz' || selectedCategory === 'balance') sponsorUrl = COUPANG_URL;
+      else if (selectedCategory === 'brain') sponsorUrl = ELEVENST_URL;
+      else if (selectedCategory === 'joke') sponsorUrl = EMART_URL;
     }
     
     // 새 창으로 스폰서 링크 팝업 (쿠키 심기)
     window.open(sponsorUrl, '_blank');
+    
+    // 통계 로깅을 위한 비동기 API 호출 (결과를 기다리지 않음)
+    fetch('/api/log-game-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: selectedCategory })
+    }).catch(err => console.error('Failed to log click:', err));
     
     // 현재 창에서는 정답 공개
     setIsRevealed(true);
