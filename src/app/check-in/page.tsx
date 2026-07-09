@@ -52,11 +52,19 @@ function CheckInContent() {
   };
 
   const handleRevealAnswer = () => {
-    // 50 / 25 / 25 스폰서 쿠키 드랍 로직
-    const rand = Math.random();
-    let sponsorUrl = COUPANG_URL; // 50%
-    if (rand > 0.5 && rand <= 0.75) sponsorUrl = ELEVENST_URL; // 25%
-    else if (rand > 0.75) sponsorUrl = EMART_URL; // 25%
+    // 게임 카테고리별 스폰서 고정 배분 (쿠팡 구매율이 높으므로 인기 게임 2개에 쿠팡 배정)
+    // MZ 퀴즈, 밸런스 게임 -> 쿠팡 (50%)
+    // 두뇌 퀴즈 -> 11번가 (25%)
+    // 아재개그 -> 이마트몰 (25%)
+    let sponsorUrl = COUPANG_URL;
+    
+    if (selectedCategory === 'mz' || selectedCategory === 'balance') {
+      sponsorUrl = COUPANG_URL;
+    } else if (selectedCategory === 'brain') {
+      sponsorUrl = ELEVENST_URL;
+    } else if (selectedCategory === 'joke') {
+      sponsorUrl = EMART_URL;
+    }
     
     // 새 창으로 스폰서 링크 팝업 (쿠키 심기)
     window.open(sponsorUrl, '_blank');
