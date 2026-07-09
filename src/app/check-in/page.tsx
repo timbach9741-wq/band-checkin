@@ -281,7 +281,15 @@ function CheckInContent() {
   const handleUpdateMood = async (moodId: number) => {
     const targetNickname = nickname || localStorage.getItem('checkin_nickname');
     if (!targetNickname) return;
+    
+    // 낙관적 업데이트 (Optimistic UI Update): 서버 응답을 기다리지 않고 화면부터 즉시 변경
+    const previousMood = myMood;
+    const previousAttendeeMoods = { ...attendeeMoods };
+    
+    setMyMood(moodId);
+    setAttendeeMoods(prev => ({ ...prev, [targetNickname]: moodId }));
     setIsUpdatingMood(true);
+
     try {
       const res = await fetch('/api/check-in/status', {
         method: 'POST',
@@ -289,9 +297,10 @@ function CheckInContent() {
         body: JSON.stringify({ bandId, nickname: targetNickname, statusIndex: moodId })
       });
       if (!res.ok) throw new Error('상태 업데이트 실패');
-      setMyMood(moodId);
-      setAttendeeMoods(prev => ({ ...prev, [targetNickname]: moodId }));
     } catch (e) {
+      // 실패 시 원래 상태로 복구
+      setMyMood(previousMood);
+      setAttendeeMoods(previousAttendeeMoods);
       alert('상태 업데이트에 실패했습니다.');
     } finally {
       setIsUpdatingMood(false);
