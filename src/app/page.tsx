@@ -220,6 +220,10 @@ export default function Home() {
               <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded font-bold mx-1 border border-yellow-200">비용 전액 무료</span> 
               경품 비용은 저희 스폰서 광고 수익으로 전액 충당됩니다.
             </p>
+            <div className="mt-5 flex items-center justify-center gap-2 text-sm text-slate-500 font-bold bg-slate-100/80 py-2 px-4 rounded-full w-fit mx-auto border border-slate-200">
+              <span className="text-emerald-500">🔒</span>
+              ※ 본 서비스는 개인정보를 서버에 절대 저장하지 않으며 토큰 방식으로 안전하게 운영됩니다.
+            </div>
           </div>
         </section>
 
