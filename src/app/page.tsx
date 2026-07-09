@@ -500,27 +500,33 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-lg transition-all">
-                <div className="text-5xl mb-4">🎯</div>
-                <h3 className="text-xl font-black text-slate-800 mb-3">스마트 자동 랭킹 집계</h3>
-                <p className="text-slate-600 text-sm leading-relaxed font-medium break-keep">
-                  누가누가 가장 열심히 활동할까요? 유저들이 출석할 때마다 실시간으로 누적 출석일과 오늘의 랭킹이 표시되어 경쟁심을 유발합니다.
+              <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                  🎯
+                </div>
+                <h3 className="text-xl font-black text-slate-800 mb-3 tracking-tight">스마트 자동 랭킹 집계</h3>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium break-keep">
+                  누가누가 가장 열심히 활동할까요? 유저들이 출석할 때마다 실시간으로 누적 출석일과 오늘의 랭킹이 표시되어 자연스러운 경쟁심을 유발합니다.
                 </p>
               </div>
               
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 hover:shadow-lg transition-all">
-                <div className="text-5xl mb-4">🔮</div>
-                <h3 className="text-xl font-black text-indigo-900 mb-3">매일매일 무료 운세</h3>
-                <p className="text-indigo-700/80 text-sm leading-relaxed font-medium break-keep">
-                  "오늘의 내 행운의 컬러는?" 아침마다 유저들이 스스로 접속해서 무료 운세를 확인하게 만드는 강력한 미끼 기능이 탑재되어 있습니다.
+              <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                  🧠
+                </div>
+                <h3 className="text-xl font-black text-slate-800 mb-3 tracking-tight">매일 리필되는 두뇌 게임</h3>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium break-keep">
+                  <span className="text-blue-500 font-bold">MZ 신조어 퀴즈</span>, <span className="text-cyan-600 font-bold">피의 게임 두뇌 퀴즈</span>, <span className="text-indigo-500 font-bold">극악의 밸런스 게임</span> 등 매일 새로운 콘텐츠가 업데이트되어 유저들이 매일매일 스스로 접속하게 만듭니다.
                 </p>
               </div>
               
-              <div className="bg-gradient-to-br from-orange-50 to-rose-50 rounded-3xl p-8 border border-orange-100 hover:shadow-lg transition-all">
-                <div className="text-5xl mb-4">🎰</div>
-                <h3 className="text-xl font-black text-orange-900 mb-3">로또 번호 자동 추첨기</h3>
-                <p className="text-orange-700/80 text-sm leading-relaxed font-medium break-keep">
-                  실제 당첨 알고리즘을 분석한 현실적인 로또 번호 생성기! 쫄깃한 룰렛 애니메이션으로 유저들의 체류 시간을 극대화합니다.
+              <div className="bg-white/70 backdrop-blur-md rounded-3xl p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 group">
+                <div className="w-16 h-16 bg-gradient-to-br from-rose-100 to-orange-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                  🤣
+                </div>
+                <h3 className="text-xl font-black text-slate-800 mb-3 tracking-tight">피식 터지는 모닝 유머</h3>
+                <p className="text-slate-500 text-sm leading-relaxed font-medium break-keep">
+                  아침 출근길, 등굣길을 즐겁게 만들어 줄 <span className="text-rose-500 font-bold">피식대학급 아재개그</span>! 정답을 보기 위해 스크롤을 내리는 순간 체류 시간이 극대화되고 커뮤니티의 활력이 200% 상승합니다.
                 </p>
               </div>
             </div>
