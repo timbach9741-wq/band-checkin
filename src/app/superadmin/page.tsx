@@ -46,6 +46,19 @@ export default function SuperadminPage() {
     return 'bg-slate-100 text-slate-500 border border-slate-200';
   };
 
+  const formatContactInfo = (text: string) => {
+    if (!text) return '';
+    return text.replace(/01[016789][\s-]*\d{3,4}[\s-]*\d{4}/g, (match) => {
+      const cleaned = match.replace(/[^0-9]/g, '');
+      if (cleaned.length === 11) {
+        return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+      } else if (cleaned.length === 10) {
+        return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+      }
+      return match;
+    });
+  };
+
   const fetchBands = async (pw: string, offset: number = 0) => {
     setIsLoading(true);
     try {
@@ -427,7 +440,7 @@ export default function SuperadminPage() {
                           {band.bandName}
                           <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${getPlatformStyle(band.platform)}`}>{getPlatformName(band.platform)}</span>
                         </div>
-                        <div className="text-xs text-slate-400 mt-0.5">{band.contactInfo}</div>
+                        <div className="text-xs text-slate-400 mt-0.5">{formatContactInfo(band.contactInfo)}</div>
                         <div className="flex flex-wrap items-center gap-1.5 mt-2">
                           <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100">
                             오늘 활성: {band.active1Day}명
