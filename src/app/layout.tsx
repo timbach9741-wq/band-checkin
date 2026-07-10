@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://band-checkin.vercel.app'),
-  title: "🎁 오늘의 출석체크 & 혜택",
-  description: "지금 바로 출석 도장을 찍고 무료 운세와 로또 번호 혜택을 받아가세요!",
+  title: "🚀 모임 활성화 300% 출석체크 링크 만들기",
+  description: "비용 0원! 우리 모임만의 출석체크 이벤트를 10초 만에 만들어보세요.",
   openGraph: {
-    title: "🎁 오늘의 출석체크 & 혜택",
-    description: "지금 바로 출석 도장을 찍고 무료 운세와 로또 번호 혜택을 받아가세요!",
-    siteName: "출석체크 이벤트",
+    title: "🚀 모임 활성화 300% 출석체크 링크 만들기",
+    description: "비용 0원! 우리 모임만의 출석체크 이벤트를 10초 만에 만들어보세요.",
+    siteName: "출석체크 메이커",
     locale: "ko_KR",
     type: "website",
   }
