@@ -7,7 +7,7 @@ export const contentType = 'image/png';
 
 export default async function Image() {
   const fontData = await fetch(
-    'https://fonts.gstatic.com/s/notosanskr/v36/PbykFmXiEBPT4ITcgqGQZVKFcxDl.ttf'
+    new URL('./font.ttf', import.meta.url)
   ).then((res) => res.arrayBuffer());
 
   return new ImageResponse(
