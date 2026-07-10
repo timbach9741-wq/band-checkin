@@ -272,6 +272,7 @@ function AdminDashboard() {
                     <th className="p-4 font-bold">순위</th>
                     <th className="p-4 font-bold">닉네임</th>
                     <th className="p-4 font-bold">누적 출석</th>
+                    <th className="p-4 font-bold">최근 출석</th>
                     <th className="p-4 font-bold">상태</th>
                   </tr>
                 </thead>
@@ -286,6 +287,18 @@ function AdminDashboard() {
                           {isWinner && <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded border border-yellow-200">응모달성</span>}
                         </td>
                         <td className="p-4 font-black text-indigo-600">{user.days}일</td>
+                        <td className="p-4 text-sm text-slate-500 font-medium">
+                          {(() => {
+                            const date = new Date(user.lastCheckIn);
+                            const isToday = new Date().toDateString() === date.toDateString();
+                            const timeStr = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+                            return isToday ? (
+                              <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">오늘 {timeStr}</span>
+                            ) : (
+                              `${date.getMonth()+1}/${date.getDate()} ${timeStr}`
+                            );
+                          })()}
+                        </td>
                         <td className="p-4">
                           {isWinner ? (
                             <span className="text-green-600 font-bold text-sm">완료</span>
