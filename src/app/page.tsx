@@ -3,6 +3,17 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+const REVIEWS = [
+  { platform: '네이버 밴드', emoji: '🟢', role: '4050 등산 모임 리더', text: '"항상 눈팅만 하는 유령 회원이 많아서 고민이었는데, 이 링크 하나 공지에 띄웠더니 참여도가 폭발했습니다! 이벤트 입소문이 나서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>신규 가입자도 2배나 증가</span>했어요. 최고입니다."' },
+  { platform: '당근 동네생활', emoji: '🥕', role: '주말 러닝 크루장', text: '"러닝 참여율이 저조해서 힘들었는데, 도입 후 매일 런닝 인증하는 분들이 엄청 많아졌습니다! 커피 목표 달성하려고 다들 매일 들어오니 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>동네 모임 랭킹 1위</span> 찍었습니다."' },
+  { platform: '카카오톡 오픈채팅', emoji: '🟡', role: '자격증 스터디 방장', text: '"스터디원들이 매일 아침 알아서 링크 들어가서 출석하고 퀴즈도 풀면서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>채팅방이 24시간 활성화</span>됐습니다. 링크 하나 툭 던져놨을 뿐인데 관리가 너무 편해졌네요!"' },
+  { platform: '소모임 (App)', emoji: '👤', role: '2030 독서 모임장', text: '"회비 걷어서 이벤트 하기 늘 부담스러웠는데, 내 돈 0원으로 멤버들에게 기프티콘까지 뿌릴 수 있으니 좋습니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>모임원들 반응이 역대급</span>이라 너무 든든합니다!"' },
+  { platform: '네이버 카페', emoji: '☕', role: '맘카페 스탭', text: '"매번 조회수만 높고 댓글이 없어서 썰렁했는데, 이 이벤트를 시작하고 나서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>게시판 리젠율이 3배 상승</span>했습니다. 회원들이 너무 재밌어해요."' },
+  { platform: '가족 단톡방', emoji: '🏠', role: '대가족 방장', text: '"명절 때만 말하던 단톡방이 이 출석체크 덕분에 매일매일 시끌벅적해졌어요! 퀴즈 정답 맞히는 재미에 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>부모님이 더 좋아하십니다.</span>"' },
+  { platform: '네이버 밴드', emoji: '🟢', role: '미라클모닝 리더', text: '"새벽 기상 인증이 항상 3일을 못 넘겼는데, 이 시스템 도입 후 다들 커피 한 잔 받겠다고 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>악착같이 새벽 5시에 일어납니다.</span> 기적을 보았어요!"' },
+  { platform: '인스타그램', emoji: '📸', role: '다이어트 챌린지', text: '"디엠으로 인증받기 너무 빡셌는데 링크 하나로 전원 출석 관리가 자동으로 되니 신세계입니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>팔로워들 만족도 500%</span>입니다."' }
+];
+
 export default function Home() {
   const [newPlatform, setNewPlatform] = useState<'band' | 'daangn' | 'kakao' | 'personal'>('band');
   const [newBandName, setNewBandName] = useState('');
@@ -227,77 +238,39 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 1.5. 실제 방장님들의 리얼 후기 (Social Proof) */}
-        <section className="w-full bg-slate-50/80 pt-16 pb-24 px-4 border-b border-slate-200 z-10 relative">
-          <div className="max-w-5xl mx-auto">
+        {/* 1.5. 실제 방장님들의 리얼 후기 (Social Proof - Marquee) */}
+        <section className="w-full bg-slate-50/80 pt-16 pb-24 border-b border-slate-200 z-10 relative overflow-hidden">
+          <div className="max-w-5xl mx-auto px-4">
             <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 fill-mode-both">
               <span className="text-indigo-600 font-bold bg-indigo-100 px-3 py-1 rounded-full text-sm mb-3 inline-block">실시간 베스트 후기 🔥</span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-800 break-keep">
                 "링크 하나 올렸을 뿐인데, 모임이 완전히 달라졌어요!"
               </h2>
             </div>
+          </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-              {/* 후기 1 */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 hover:shadow-md hover:-translate-y-1 transition-all text-left">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">🟢</span>
-                  <div>
-                    <div className="text-sm font-bold text-slate-800">네이버 밴드</div>
-                    <div className="text-xs text-slate-500">4050 등산 모임 리더</div>
+          {/* Marquee Container */}
+          <div className="w-full relative flex pause-on-hover gap-4 overflow-hidden pt-2 pb-8 animate-in fade-in duration-1000 delay-500 fill-mode-both group">
+            {/* Array mapped twice for seamless infinite scrolling */}
+            {[1, 2].map((set) => (
+              <div key={set} className="flex min-w-full shrink-0 gap-4 animate-marquee items-stretch px-2">
+                {REVIEWS.map((review, idx) => (
+                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md text-left w-[320px] shrink-0 whitespace-normal flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-2xl">{review.emoji}</span>
+                        <div>
+                          <div className="text-sm font-bold text-slate-800">{review.platform}</div>
+                          <div className="text-xs text-slate-500">{review.role}</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-1 mb-3">{'⭐⭐⭐⭐⭐'.split('').map((s,i)=><span key={i} className="text-yellow-400 text-xs">{s}</span>)}</div>
+                      <p className="text-sm text-slate-600 font-medium leading-relaxed break-keep" dangerouslySetInnerHTML={{__html: review.text}}></p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-1 mb-2">{'⭐⭐⭐⭐⭐'.split('').map((s,i)=><span key={i} className="text-yellow-400 text-xs">{s}</span>)}</div>
-                <p className="text-sm text-slate-600 font-medium leading-relaxed break-keep">
-                  "항상 눈팅만 하는 유령 회원이 많아서 고민이었는데, 이 링크 하나 공지에 띄웠더니 참여도가 폭발했습니다! 이벤트 입소문이 나서 <span className="text-indigo-600 font-bold bg-indigo-50 px-1 rounded">신규 가입자도 2배나 증가</span>했어요. 최고입니다."
-                </p>
+                ))}
               </div>
-
-              {/* 후기 2 */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 hover:shadow-md hover:-translate-y-1 transition-all text-left">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">🥕</span>
-                  <div>
-                    <div className="text-sm font-bold text-slate-800">당근 동네생활</div>
-                    <div className="text-xs text-slate-500">주말 러닝 크루장</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-2">{'⭐⭐⭐⭐⭐'.split('').map((s,i)=><span key={i} className="text-yellow-400 text-xs">{s}</span>)}</div>
-                <p className="text-sm text-slate-600 font-medium leading-relaxed break-keep">
-                  "러닝 참여율이 저조해서 힘들었는데, 도입 후 매일 런닝 인증하는 분들이 엄청 많아졌습니다! 커피 목표 달성하려고 다들 매일 들어오니 <span className="text-indigo-600 font-bold bg-indigo-50 px-1 rounded">동네 모임 랭킹 1위</span> 찍었습니다."
-                </p>
-              </div>
-
-              {/* 후기 3 */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 hover:shadow-md hover:-translate-y-1 transition-all text-left">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">🟡</span>
-                  <div>
-                    <div className="text-sm font-bold text-slate-800">카카오톡 오픈채팅</div>
-                    <div className="text-xs text-slate-500">자격증 스터디 방장</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-2">{'⭐⭐⭐⭐⭐'.split('').map((s,i)=><span key={i} className="text-yellow-400 text-xs">{s}</span>)}</div>
-                <p className="text-sm text-slate-600 font-medium leading-relaxed break-keep">
-                  "스터디원들이 매일 아침 알아서 링크 들어가서 출석하고 퀴즈도 풀면서 <span className="text-indigo-600 font-bold bg-indigo-50 px-1 rounded">채팅방이 24시간 활성화</span>됐습니다. 링크 하나 툭 던져놨을 뿐인데 관리가 너무 편해졌네요!"
-                </p>
-              </div>
-
-              {/* 후기 4 */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 hover:shadow-md hover:-translate-y-1 transition-all text-left">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">👤</span>
-                  <div>
-                    <div className="text-sm font-bold text-slate-800">소모임 (App)</div>
-                    <div className="text-xs text-slate-500">2030 독서 모임장</div>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-2">{'⭐⭐⭐⭐⭐'.split('').map((s,i)=><span key={i} className="text-yellow-400 text-xs">{s}</span>)}</div>
-                <p className="text-sm text-slate-600 font-medium leading-relaxed break-keep">
-                  "회비 걷어서 이벤트 하기 늘 부담스러웠는데, 내 돈 0원으로 멤버들에게 기프티콘까지 뿌릴 수 있으니 좋습니다. <span className="text-indigo-600 font-bold bg-indigo-50 px-1 rounded">모임원들 반응이 역대급</span>이라 너무 든든합니다!"
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
