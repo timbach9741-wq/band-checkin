@@ -512,12 +512,6 @@ function CheckInContent() {
                     <span className="text-purple-300 text-base md:text-lg font-black w-6 text-center">{attendees.length - index}</span>
                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg border border-white/20 relative">
                       {user.name.charAt(0)}
-                      {/* 상태 뱃지 */}
-                      {attendeeMoods[user.name] && (
-                        <div className="absolute -bottom-1 -right-1 bg-slate-800 rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md border-2 border-slate-700 animate-in zoom-in duration-300">
-                          {MOOD_OPTIONS.find(m => m.id === attendeeMoods[user.name])?.emoji}
-                        </div>
-                      )}
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
