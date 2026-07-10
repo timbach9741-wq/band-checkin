@@ -6,6 +6,10 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function Image() {
+  const fontData = await fetch(
+    'https://fonts.gstatic.com/s/notosanskr/v36/PbykFmXiEBPT4ITcgqGQZVKFcxDl.ttf'
+  ).then((res) => res.arrayBuffer());
+
   return new ImageResponse(
     (
       <div
@@ -67,6 +71,13 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'NotoSansKR',
+          data: fontData,
+          style: 'normal',
+        },
+      ],
     }
   );
 }
