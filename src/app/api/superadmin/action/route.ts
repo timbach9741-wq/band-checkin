@@ -77,6 +77,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '처리 실패' }, { status: 400 });
     }
 
+    if (action === 'deleteRoom') {
+      const { bandId } = payload;
+      
+      const { error } = await supabaseAdmin
+        .from('attendance_logs')
+        .delete()
+        .eq('band_id', bandId);
+
+      if (error) {
+        return NextResponse.json({ error: '방 삭제 실패' }, { status: 500 });
+      }
+      
+      return NextResponse.json({ success: true });
+    }
+
     if (action === 'reward') {
       const { bandName, nickname } = payload;
       

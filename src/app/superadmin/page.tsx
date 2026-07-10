@@ -118,6 +118,19 @@ export default function SuperadminPage() {
     } catch (e) { alert('오류 발생'); }
   };
 
+  const handleDeleteRoom = async (bandId: string) => {
+    if (!confirm('경고: 이 방과 관련된 모든 출석 기록을 영구적으로 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다)')) return;
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteRoom', password, payload: { bandId } })
+      });
+      if (res.ok) { alert('방이 완전히 삭제되었습니다.'); fetchBands(password, monthOffset); }
+      else alert('삭제 실패');
+    } catch (e) { alert('오류 발생'); }
+  };
+
   const handleReward = async (bandName: string, nickname: string) => {
     if (!confirm(`'${nickname}'님을 당첨자로 선정하고 전광판에 띄우시겠습니까?`)) return;
     try {
@@ -478,6 +491,10 @@ export default function SuperadminPage() {
                               🛑 혜택 중단
                             </button>
                           )}
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteRoom(band.bandId); }}
+                            className="bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                            🗑️ 방 완전 삭제
+                          </button>
                           <button onClick={(e) => { e.stopPropagation(); downloadCSV(band); }}
                             className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
                             📥 이 방 CSV
