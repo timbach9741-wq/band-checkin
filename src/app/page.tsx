@@ -4,14 +4,22 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 const REVIEWS = [
-  { platform: '네이버 밴드', emoji: '🟢', role: '4050 등산 모임 리더', text: '"항상 눈팅만 하는 유령 회원이 많아서 고민이었는데, 이 링크 하나 공지에 띄웠더니 참여도가 폭발했습니다! 이벤트 입소문이 나서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>신규 가입자도 2배나 증가</span>했어요. 최고입니다."' },
-  { platform: '당근 동네생활', emoji: '🥕', role: '주말 러닝 크루장', text: '"러닝 참여율이 저조해서 힘들었는데, 도입 후 매일 런닝 인증하는 분들이 엄청 많아졌습니다! 커피 목표 달성하려고 다들 매일 들어오니 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>동네 모임 랭킹 1위</span> 찍었습니다."' },
-  { platform: '카카오톡 오픈채팅', emoji: '🟡', role: '자격증 스터디 방장', text: '"스터디원들이 매일 아침 알아서 링크 들어가서 출석하고 퀴즈도 풀면서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>채팅방이 24시간 활성화</span>됐습니다. 링크 하나 툭 던져놨을 뿐인데 관리가 너무 편해졌네요!"' },
-  { platform: '소모임 (App)', emoji: '👤', role: '2030 독서 모임장', text: '"회비 걷어서 이벤트 하기 늘 부담스러웠는데, 내 돈 0원으로 멤버들에게 기프티콘까지 뿌릴 수 있으니 좋습니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>모임원들 반응이 역대급</span>이라 너무 든든합니다!"' },
-  { platform: '네이버 카페', emoji: '☕', role: '맘카페 스탭', text: '"매번 조회수만 높고 댓글이 없어서 썰렁했는데, 이 이벤트를 시작하고 나서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>게시판 리젠율이 3배 상승</span>했습니다. 회원들이 너무 재밌어해요."' },
-  { platform: '가족 단톡방', emoji: '🏠', role: '대가족 방장', text: '"명절 때만 말하던 단톡방이 이 출석체크 덕분에 매일매일 시끌벅적해졌어요! 퀴즈 정답 맞히는 재미에 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>부모님이 더 좋아하십니다.</span>"' },
-  { platform: '네이버 밴드', emoji: '🟢', role: '미라클모닝 리더', text: '"새벽 기상 인증이 항상 3일을 못 넘겼는데, 이 시스템 도입 후 다들 커피 한 잔 받겠다고 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>악착같이 새벽 5시에 일어납니다.</span> 기적을 보았어요!"' },
-  { platform: '인스타그램', emoji: '📸', role: '다이어트 챌린지', text: '"디엠으로 인증받기 너무 빡셌는데 링크 하나로 전원 출석 관리가 자동으로 되니 신세계입니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>팔로워들 만족도 500%</span>입니다."' }
+  { platform: '네이버 밴드', emoji: '🟢', role: '4050 등산 모임 리더', text: '"유령 회원이 많아 고민이었는데, 링크 하나 공지에 띄웠더니 참여도가 폭발했습니다! <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>신규 가입자도 2배 증가</span>했어요."' },
+  { platform: '당근 동네생활', emoji: '🥕', role: '주말 러닝 크루장', text: '"도입 후 매일 런닝 인증하는 분들이 엄청 많아졌습니다! 커피 목표 달성하려고 다들 매일 들어오니 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>동네 랭킹 1위</span> 찍었습니다."' },
+  { platform: '카카오톡 오픈채팅', emoji: '🟡', role: '자격증 스터디 방장', text: '"스터디원들이 매일 아침 알아서 출석하고 퀴즈 풀면서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>채팅방이 24시간 활성화</span>됐습니다. 관리가 너무 편해졌네요!"' },
+  { platform: '소모임 (App)', emoji: '👤', role: '2030 독서 모임장', text: '"회비 걷어서 이벤트 하기 부담스러웠는데, 내 돈 0원으로 멤버들에게 기프티콘 뿌릴 수 있으니 너무 좋습니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>반응이 역대급</span>이네요!"' },
+  { platform: '네이버 카페', emoji: '☕', role: '맘카페 스탭', text: '"조회수만 높고 썰렁했는데, 이 이벤트를 시작하고 나서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>게시판 리젠율이 3배 상승</span>했습니다. 회원들이 너무 재밌어해요."' },
+  { platform: '가족 단톡방', emoji: '🏠', role: '대가족 방장', text: '"명절 때만 말하던 단톡방이 출석체크 덕분에 매일매일 시끌벅적해졌어요! 퀴즈 맞히는 재미에 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>부모님이 더 좋아하십니다.</span>"' },
+  { platform: '네이버 밴드', emoji: '🟢', role: '미라클모닝 리더', text: '"새벽 기상 인증이 3일을 못 넘겼는데, 커피 한 잔 받겠다고 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>다들 악착같이 새벽 5시에 일어납니다.</span> 기적을 보았어요!"' },
+  { platform: '인스타그램', emoji: '📸', role: '다이어트 챌린지', text: '"디엠으로 인증받기 너무 빡셌는데 링크 하나로 전원 출석 관리가 자동으로 되니 신세계입니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>팔로워 만족도 500%</span>!"' },
+  { platform: '대학생 단톡방', emoji: '🎓', role: '동아리 회장', text: '"동아리방 출석률이 저조했는데, 이거 도입하고 나서 선후배 할 것 없이 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>매일 출석체크하러 들어옵니다.</span>"' },
+  { platform: '당근 동네생활', emoji: '🥕', role: '반려견 산책 모임', text: '"강아지 산책 인증용으로 쓰고 있는데, 모임 분들이 매일 커피 쿠폰 모으는 재미에 푹 빠지셨어요. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>분위기 최고</span>입니다."' },
+  { platform: '소모임 (App)', emoji: '👤', role: '보드게임 모임장', text: '"오프라인 모임 없는 날에도 회원들끼리 퀴즈 정답 공유하면서 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>유대감이 훨씬 끈끈해졌습니다.</span> 정말 추천해요!"' },
+  { platform: '카카오톡 오픈채팅', emoji: '🟡', role: '주식/투자 정보방', text: '"정보만 빼가던 눈팅족들이 매일 출석하고 채팅에 참여하기 시작했습니다! <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>방 분위기가 180도 바뀌었어요.</span>"' },
+  { platform: '네이버 밴드', emoji: '🟢', role: '골프 동호회 총무', text: '"연령대가 높으신 회원님들도 링크만 누르면 되니 엄청 쉬워하십니다. <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>이벤트 참여율 95% 달성</span>했어요!"' },
+  { platform: '네이버 카페', emoji: '☕', role: '자영업자 커뮤니티', text: '"매일 가게 마감하고 출석체크 하는 게 소소한 낙이 되었습니다. 회원분들끼리 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>서로 독려하며 분위기가 너무 좋아요.</span>"' },
+  { platform: '디스코드', emoji: '🎮', role: '게임 클랜 마스터', text: '"디코에 링크 하나 고정해뒀을 뿐인데 클랜원들 매일 출석률이 장난 아닙니다! <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>무료로 이런 기능</span>을 쓸 수 있다니 갓겜이네요."' },
+  { platform: '카카오톡 단톡방', emoji: '🟡', role: '사내 동호회', text: '"회사 지원금이 끊겨서 이벤트 하기 막막했는데, 비용 한 푼 안 들이고 <span class=\'text-indigo-600 font-bold bg-indigo-50 px-1 rounded\'>커피 쿠폰 이벤트를 진행</span>할 수 있어서 다들 감탄했습니다."' }
 ];
 
 export default function Home() {
@@ -33,6 +41,18 @@ export default function Home() {
   const [inquiryBandName, setInquiryBandName] = useState('');
   const [inquiryContact, setInquiryContact] = useState('');
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
+  const [recentBands, setRecentBands] = useState<any[]>([]);
+  const [displayReviews, setDisplayReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Generate random reviews on client mount to avoid SSR hydration mismatch
+    const shuffled = [...REVIEWS].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 8).map(review => ({
+      ...review,
+      timeAgo: `${Math.floor(Math.random() * 59) + 1}분 전`
+    }));
+    setDisplayReviews(selected);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -250,17 +270,20 @@ export default function Home() {
           </div>
             
           {/* Marquee Container */}
-          <div className="w-full relative flex pause-on-hover gap-4 overflow-hidden pt-2 pb-8 animate-in fade-in duration-1000 delay-500 fill-mode-both group">
-            {/* Array mapped twice for seamless infinite scrolling */}
-            {[1, 2].map((set) => (
+          <div className="w-full relative flex pause-on-hover gap-4 overflow-hidden pt-2 pb-8 animate-in fade-in duration-1000 delay-500 fill-mode-both group min-h-[220px]">
+            {displayReviews.length > 0 && [1, 2].map((set) => (
               <div key={set} className="flex min-w-full shrink-0 gap-4 animate-marquee items-stretch px-2">
-                {REVIEWS.map((review, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md text-left w-[320px] shrink-0 whitespace-normal flex flex-col justify-between">
+                {displayReviews.map((review, idx) => (
+                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/60 transition-all hover:shadow-md text-left w-[340px] shrink-0 whitespace-normal flex flex-col justify-between relative">
+                    {/* Time Ago Badge */}
+                    <div className="absolute top-4 right-4 bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2 py-1 rounded-full tracking-tight">
+                      {review.timeAgo}
+                    </div>
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <span className="text-2xl">{review.emoji}</span>
                         <div>
-                          <div className="text-sm font-bold text-slate-800">{review.platform}</div>
+                          <div className="text-sm font-bold text-slate-800 pr-12">{review.platform}</div>
                           <div className="text-xs text-slate-500">{review.role}</div>
                         </div>
                       </div>
