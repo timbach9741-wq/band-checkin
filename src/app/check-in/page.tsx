@@ -29,6 +29,7 @@ function CheckInContent() {
   const [globalMarquee, setGlobalMarquee] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [customLink, setCustomLink] = useState<string | null>(null);
 
   // DB 연동된 실제 출석자 데이터 상태
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -111,6 +112,9 @@ function CheckInContent() {
               setBandTitle(data.config.bandName);
             } else {
               setBandTitle(bandId.split('-').slice(0, -1).join(' '));
+            }
+            if (data.config.customLink) {
+              setCustomLink(data.config.customLink);
             }
           }
           if (data.globalMarquee) setGlobalMarquee(data.globalMarquee);
@@ -219,8 +223,8 @@ function CheckInContent() {
 
     setIsSubmitting(true);
 
-    // 1. 화이트햇 방식: 쿠팡 새 창 띄우기
-    window.open(COUPANG_URL, '_blank');
+    // 1. 화이트햇 방식: 쿠팡 또는 커스텀 제휴 링크 새 창 띄우기
+    window.open(customLink || COUPANG_URL, '_blank');
 
     // 2. API 서버를 통해 출석 및 방어 로직 수행
     try {
@@ -346,7 +350,7 @@ function CheckInContent() {
                     : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-400 hover:to-purple-400 text-white border border-pink-400/50'
                 }`}
               >
-                {isSubmitting ? '출석 기록 중...' : '🔥 스폰서(쿠팡) 방문하고 출석하기'}
+                {isSubmitting ? '출석 기록 중...' : customLink ? '🔥 스폰서 방문하고 출석하기' : '🔥 스폰서(쿠팡) 방문하고 출석하기'}
               </button>
             </form>
           ) : (

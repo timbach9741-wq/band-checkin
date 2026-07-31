@@ -21,6 +21,10 @@ export default function SuperadminPage() {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
 
+  const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomLink, setNewRoomLink] = useState('');
+  const [newRoomPin, setNewRoomPin] = useState('');
+
   const PLATFORMS = [
     { id: 'band', label: '네이버밴드', active: 'bg-[#00C73C] text-white border-[#00C73C]', inactive: 'text-[#00C73C] bg-white border-slate-200 hover:bg-[#00C73C]/10 hover:border-[#00C73C]' },
     { id: 'daangn', label: '당근', active: 'bg-[#FF7E36] text-white border-[#FF7E36]', inactive: 'text-[#FF7E36] bg-white border-slate-200 hover:bg-[#FF7E36]/10 hover:border-[#FF7E36]' },
@@ -182,6 +186,49 @@ export default function SuperadminPage() {
     fetchBands(password, offset);
   };
 
+  const handleCreateRoom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoomName || !newRoomLink) {
+      alert('방 이름과 링크를 모두 입력해주세요.');
+      return;
+    }
+    if (!confirm(`'${newRoomName}' 방을 생성하시겠습니까?`)) return;
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/superadmin/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'createRoom', 
+          password, 
+          payload: { bandName: newRoomName, customLink: newRoomLink, pin: newRoomPin } 
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNewRoomName('');
+        setNewRoomLink('');
+        setNewRoomPin('');
+        fetchBands(password, monthOffset);
+        
+        const url = `${window.location.origin}/check-in?band=${data.bandId}`;
+        try {
+          await navigator.clipboard.writeText(url);
+          alert(`방이 성공적으로 생성되었습니다!\n\n출석체크 링크:\n${url}\n\n(클립보드에 복사되었습니다)`);
+        } catch(err) {
+          alert(`방이 성공적으로 생성되었습니다!\n\n출석체크 링크:\n${url}`);
+        }
+      } else {
+        alert(data.error || '방 생성 실패');
+      }
+    } catch (e) {
+      alert('오류 발생');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const downloadCSV = (band?: any) => {
     const targetBands = band ? [band] : bands;
     let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
@@ -293,6 +340,33 @@ export default function SuperadminPage() {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 space-y-6 mt-4">
+
+        {/* 특별 방 수동 생성 폼 */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-200">
+          <h2 className="text-lg font-black text-indigo-900 flex items-center gap-2 mb-4">
+            <span>🛠️</span> 특별 방 수동 생성 (맞춤형 스폰서 링크)
+          </h2>
+          <form onSubmit={handleCreateRoom} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">방 이름 <span className="text-red-500">*</span></label>
+              <input type="text" value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder="예: VIP 김사장님 전용"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400" required />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-slate-500 mb-1">커스텀 제휴 링크 (G마켓/애드픽 등) <span className="text-red-500">*</span></label>
+              <input type="url" value={newRoomLink} onChange={(e) => setNewRoomLink(e.target.value)}
+                placeholder="https://bitl.bz/..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-400" required />
+            </div>
+            <div>
+              <button type="submit" disabled={isLoading}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition-colors text-sm shadow-md">
+                {isLoading ? '생성 중...' : '방 생성하기'}
+              </button>
+            </div>
+          </form>
+        </div>
 
         {/* 통계 요약 카드 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

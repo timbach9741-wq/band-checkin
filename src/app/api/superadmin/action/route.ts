@@ -92,6 +92,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === 'createRoom') {
+      const { bandName, customLink, pin } = payload;
+      
+      if (!bandName || !customLink) {
+        return NextResponse.json({ error: '방 이름과 제휴 링크는 필수입니다.' }, { status: 400 });
+      }
+
+      const safeName = bandName.trim().replace(/[^a-zA-Z0-9가-힣\s-]/g, '').replace(/\s+/g, '-').toLowerCase();
+      const uniqueId = `${safeName || 'vip'}-${Math.random().toString(36).substring(2, 6)}`;
+      
+      const configPayload = {
+        bandName: bandName.trim(),
+        targetDays: 20,
+        platform: 'band',
+        totalMembers: 1,
+        contactInfo: '010-0000-0000',
+        pin: pin || '1234',
+        customLink: customLink.trim()
+      };
+
+      const configString = `___CONFIG_V2:${JSON.stringify(configPayload)}___`;
+
+      const { error } = await supabaseAdmin.from('attendance_logs').insert([
+        { band_id: uniqueId, nickname: configString }
+      ]);
+
+      if (error) {
+        return NextResponse.json({ error: '방 생성 중 오류가 발생했습니다.' }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, bandId: uniqueId });
+    }
+
     if (action === 'reward') {
       const { bandName, nickname } = payload;
       

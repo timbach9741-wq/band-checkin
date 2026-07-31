@@ -35,7 +35,8 @@ export async function GET(req: Request) {
           targetDays: fullConfig.targetDays,
           platform: fullConfig.platform,
           totalMembers: fullConfig.totalMembers,
-          bandName: fullConfig.bandName || bandId.split('-').slice(0, -1).join(' ')
+          bandName: fullConfig.bandName || bandId.split('-').slice(0, -1).join(' '),
+          customLink: fullConfig.customLink // Pass custom link if it exists
         };
         isBanned = fullConfig.banned === true;
       } catch (e) {
