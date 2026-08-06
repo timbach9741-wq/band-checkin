@@ -66,7 +66,9 @@ function CheckInContent() {
     
     // 통계 기반 동적 스폰서 URL 사용 (기본값 설정)
     let sponsorUrl = COUPANG_URL;
-    if (sponsorMapping && sponsorMapping[selectedCategory]) {
+    if (customLink) {
+      sponsorUrl = customLink;
+    } else if (sponsorMapping && sponsorMapping[selectedCategory]) {
       sponsorUrl = sponsorMapping[selectedCategory];
     } else {
       // API 응답 전이거나 실패 시 기본 로직 
